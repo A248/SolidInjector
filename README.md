@@ -19,10 +19,21 @@ There are no dependencies except JDK 8, and a choice of javax.inject or jakarta.
 
 ### Dependency
 
-Dependency:
-* `space.arim.injector:injector:{VERSION}`
-Module name:
-* `space.arim.injector`
+The JPMS Module name is `space.arim.injector`.
+
+The dependency is
+
+```
+space.arim.injector:injector:{VERSION}
+```
+
+The repository is
+
+```
+https://mvn-repo.arim.space/lesser-gpl3/
+```
+
+A thanks to Cloudsmith for providing free repositories for FOSS.
 
 ## Injection Usage
 
