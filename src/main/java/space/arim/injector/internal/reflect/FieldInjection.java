@@ -21,7 +21,9 @@ package space.arim.injector.internal.reflect;
 import java.lang.reflect.Field;
 
 import space.arim.injector.error.InjectionInvocationException;
+import space.arim.injector.error.InjectorException;
 import space.arim.injector.internal.DependencyRepository;
+import space.arim.injector.internal.ExceptionContext;
 import space.arim.injector.internal.dependency.InstantiableDependency;
 
 class FieldInjection implements PostConstructorInjection {
@@ -36,7 +38,12 @@ class FieldInjection implements PostConstructorInjection {
 
 	@Override
 	public void injectInto(Object instance, DependencyRepository repository) {
-		Object value = dependency.instantiate(repository);
+		Object value;
+		try {
+			value = dependency.instantiate(repository);
+		} catch (InjectorException ex) {
+			throw new ExceptionContext().rethrow(ex, "Injecting field " + QualifiedNames.forField(field));
+		}
 		try {
 			field.set(instance, value);
 		} catch (IllegalArgumentException | IllegalAccessException ex) {

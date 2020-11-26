@@ -22,7 +22,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Type;
 
-import space.arim.injector.error.MisannotatedInjecteeException;
+import space.arim.injector.error.InjectorException;
+import space.arim.injector.internal.ExceptionContext;
 import space.arim.injector.internal.dependency.AnnotatedTypeAsDependency;
 import space.arim.injector.internal.dependency.InstantiableDependency;
 import space.arim.injector.internal.dependency.InstantiableDependencyBunch;
@@ -51,8 +52,8 @@ public class ExecutableDependencies {
 			InstantiableDependency dependency;
 			try {
 				dependency = new AnnotatedTypeAsDependency(spec, type, genericType, annotations).createDependency();
-			} catch (MisannotatedInjecteeException ex) {
-				throw new MisannotatedInjecteeException("For executable " + QualifiedNames.forExecutable(executable), ex);
+			} catch (InjectorException ex) {
+				throw new ExceptionContext().rethrow(ex, "On executable " + QualifiedNames.forExecutable(executable));
 			}
 			instantiableDependencies[n] = dependency;
 		}

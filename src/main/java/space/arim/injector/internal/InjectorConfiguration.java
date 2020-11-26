@@ -18,7 +18,6 @@
  */
 package space.arim.injector.internal;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -26,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import space.arim.injector.error.MisannotatedInjecteeException;
+import space.arim.injector.error.InjectorException;
 import space.arim.injector.error.MisconfiguredBindingsException;
 import space.arim.injector.internal.provider.ContextualProvider;
 import space.arim.injector.internal.provider.FixedContextualProvider;
@@ -88,13 +87,11 @@ public class InjectorConfiguration {
 	}
 
 	private IdentifierInternal<?> createIdentifier(Method method) {
-		Annotation[] annotations = method.getAnnotations();
-		Class<?> returnType = method.getReturnType();
-		IdentifierCreation<?> creation = new IdentifierCreation<>(spec, returnType, annotations);
+		IdentifierCreation<?> idCreation = new IdentifierCreation<>(spec, method.getReturnType(), method.getAnnotations());
 		try {
-			return creation.createIdentifier();
-		} catch (MisannotatedInjecteeException ex) {
-			throw new MisannotatedInjecteeException("For method " + QualifiedNames.forMethod(method), ex);
+			return idCreation.createIdentifier();
+		} catch (InjectorException ex) {
+			throw new ExceptionContext().rethrow(ex, "On method " + QualifiedNames.forMethod(method));
 		}
 	}
 

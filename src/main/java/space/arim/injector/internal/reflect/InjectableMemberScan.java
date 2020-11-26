@@ -84,7 +84,8 @@ class InjectableMemberScan {
 					continue;
 				}
 				if (Modifier.isFinal(field.getModifiers())) {
-					throw new MisannotatedInjecteeException("Cannot inject into final field " + QualifiedNames.forField(field));
+					throw new MisannotatedInjecteeException(
+							"Cannot inject into final field " + QualifiedNames.forField(field));
 				}
 				injections.add(wrapStaticInjections(field, injectionFor(field)));
 			}

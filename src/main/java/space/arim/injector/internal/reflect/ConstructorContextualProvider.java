@@ -22,7 +22,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import space.arim.injector.error.InjectionInvocationException;
+import space.arim.injector.error.InjectorException;
 import space.arim.injector.internal.DependencyRepository;
+import space.arim.injector.internal.ExceptionContext;
 import space.arim.injector.internal.dependency.InstantiableDependencyBunch;
 import space.arim.injector.internal.provider.ContextualProvider;
 
@@ -38,10 +40,15 @@ class ConstructorContextualProvider<T> implements ContextualProvider<T> {
 
 	@Override
 	public T provideUsing(DependencyRepository repository) {
-		Object[] arguments = parameterDependencies.instantiateDependencies(repository);
+		Object[] arguments;
+		try {
+			arguments = parameterDependencies.instantiateDependencies(repository);
+		} catch (InjectorException ex) {
+			throw new ExceptionContext().rethrow(ex,
+					"Invoking constructor " + QualifiedNames.forConstructor(constructor));
+		}
 		try {
 			return constructor.newInstance(arguments);
-
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| InstantiationException ex) {
 			throw new InjectionInvocationException(

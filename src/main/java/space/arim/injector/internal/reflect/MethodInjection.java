@@ -22,7 +22,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import space.arim.injector.error.InjectionInvocationException;
+import space.arim.injector.error.InjectorException;
 import space.arim.injector.internal.DependencyRepository;
+import space.arim.injector.internal.ExceptionContext;
 import space.arim.injector.internal.dependency.InstantiableDependencyBunch;
 
 class MethodInjection implements PostConstructorInjection {
@@ -37,7 +39,12 @@ class MethodInjection implements PostConstructorInjection {
 
 	@Override
 	public void injectInto(Object instance, DependencyRepository repository) {
-		Object[] arguments = dependencies.instantiateDependencies(repository);
+		Object[] arguments;
+		try {
+			arguments = dependencies.instantiateDependencies(repository);
+		} catch (InjectorException ex) {
+			throw new ExceptionContext().rethrow(ex, "Injecting method " + QualifiedNames.forMethod(method));
+		}
 		try {
 			method.invoke(instance, arguments);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
