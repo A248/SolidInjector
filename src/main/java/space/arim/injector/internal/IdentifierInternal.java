@@ -31,8 +31,12 @@ public final class IdentifierInternal<T> {
 		this.qualifier = qualifier;
 	}
 
-	public Class<T> getType() {
+	Class<T> getType() {
 		return type;
+	}
+
+	boolean isQualified() {
+		return qualifier != null;
 	}
 
 	public static <T> IdentifierInternal<T> ofType(Class<T> type) {
@@ -74,7 +78,7 @@ public final class IdentifierInternal<T> {
 
 	@Override
 	public String toString() {
-		return "IdentifierInternal [type=" + type + ", qualifier=" + qualifier + "]";
+		return type.getName() + " " + ((qualifier == null) ? "unqualified" : "qualifier " + qualifier);
 	}
 
 	private interface Qualifier {}
@@ -103,7 +107,7 @@ public final class IdentifierInternal<T> {
 
 		@Override
 		public String toString() {
-			return "IdentifierInternal.UserQualifier [annotation=" + annotation + "]";
+			return "@" + annotation.getSimpleName();
 		}
 	}
 
@@ -130,7 +134,7 @@ public final class IdentifierInternal<T> {
 
 		@Override
 		public String toString() {
-			return "IdentifierInternal.NamedQualifier [name=" + name + "]";
+			return "@Named(\"" + name + "\")";
 		}
 	}
 

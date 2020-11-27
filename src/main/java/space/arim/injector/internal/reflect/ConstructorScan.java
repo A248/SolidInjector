@@ -22,17 +22,16 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
 import space.arim.injector.error.MisannotatedInjecteeException;
-import space.arim.injector.internal.IdentifierInternal;
 import space.arim.injector.internal.InjectionSettings;
 
 public class ConstructorScan<U> {
 
 	private final InjectionSettings settings;
-	private final IdentifierInternal<U> identifier;
+	private final Class<U> clazz;
 
-	public ConstructorScan(InjectionSettings settings, IdentifierInternal<U> identifier) {
+	public ConstructorScan(InjectionSettings settings, Class<U> clazz) {
 		this.settings = settings;
-		this.identifier = identifier;
+		this.clazz = clazz;
 	}
 
 	public Constructor<U> findInjectableConstructor() {
@@ -46,7 +45,7 @@ public class ConstructorScan<U> {
 		boolean foundNonDefault = false;
 
 		@SuppressWarnings("unchecked")
-		Constructor<U>[] declaredConstructors = (Constructor<U>[]) identifier.getType().getDeclaredConstructors();
+		Constructor<U>[] declaredConstructors = (Constructor<U>[]) clazz.getDeclaredConstructors();
 		for (Constructor<U> constructor : declaredConstructors) {
 
 			boolean isPublic = Modifier.isPublic(constructor.getModifiers());
@@ -56,7 +55,7 @@ public class ConstructorScan<U> {
 			if (settings.spec().hasInjectAnnotation(constructor)) {
 				if (injectAnnotatedConstructor != null) {
 					throw new MisannotatedInjecteeException(
-							"Multiple constructors with @Inject present on " + identifier.getType().getName());
+							"Multiple constructors with @Inject present on " + clazz.getName());
 				}
 				injectAnnotatedConstructor = constructor;
 			}
@@ -73,7 +72,7 @@ public class ConstructorScan<U> {
 			return defaultConstructor;
 		}
 		throw new MisannotatedInjecteeException(
-				"No injectable constructors found for concrete type " + identifier.getType().getName());
+				"No injectable constructors found on concrete type " + clazz.getName());
 	}
 
 }

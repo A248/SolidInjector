@@ -42,13 +42,16 @@ public class InjectorImpl implements DependencyRepository {
 		@SuppressWarnings("unchecked")
 		ContextualProvider<U> existingProvider = (ContextualProvider<U>) providers.get(identifier);
 		if (existingProvider == null) {
-			// No existing provider, lookup or create a provider from a concrete class
+			// No existing provider, create one if possible
+			if (identifier.isQualified()) {
+				throw new MisconfiguredBindingsException("No binding found for qualified identifier " + identifier);
+			}
 			Class<U> type = identifier.getType();
 			if (type.isInterface() || Modifier.isAbstract(type.getModifiers())) {
 				throw new MisconfiguredBindingsException(
-						"No provider or binding found for abstract type " + type.getName());
+						"No binding found for abstract identifier " + identifier);
 			}
-			ContextualProvider<U> newProvider = createConcreteProvider(identifier);
+			ContextualProvider<U> newProvider = createConcreteProvider(type);
 			// Optimistic update
 			@SuppressWarnings("unchecked")
 			ContextualProvider<U> previousProvider = (ContextualProvider<U>) providers.putIfAbsent(identifier, newProvider);
@@ -57,8 +60,8 @@ public class InjectorImpl implements DependencyRepository {
 		return existingProvider;
 	}
 
-	private <U> ContextualProvider<U> createConcreteProvider(IdentifierInternal<U> identifier) {
-		Constructor<U> constructor = new ConstructorScan<>(settings, identifier).findInjectableConstructor();
+	private <U> ContextualProvider<U> createConcreteProvider(Class<U> type) {
+		Constructor<U> constructor = new ConstructorScan<>(settings, type).findInjectableConstructor();
 		constructor.setAccessible(true); // Check and/or set visibility
 		return new ConstructorAsProvider<>(settings, constructor).createProvider();
 	}
