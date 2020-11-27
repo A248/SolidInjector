@@ -16,8 +16,9 @@
  * along with SolidInjector. If not, see <https://www.gnu.org/licenses/>
  * and navigate to version 3 of the GNU Lesser General Public License.
  */
-package space.arim.injector;
+package space.arim.injector.internal.reflect;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import jakarta.inject.Inject;
@@ -26,36 +27,52 @@ import org.junit.jupiter.api.Test;
 
 import space.arim.injector.error.MisannotatedInjecteeException;
 import space.arim.injector.example.Plane;
+import space.arim.injector.internal.InjectionSettings;
+import space.arim.injector.internal.spec.SpecDetector;
 
-public class BrokenConstructorsTest {
+public class ConstructorScanTest {
 
-	private Injector injector = Injector.newInjector();
+	private final InjectionSettings settings = new InjectionSettings(SpecDetector.detectedSpec());
 
 	@Test
-	public void testNoInjectCtors() {
+	public void testNoInjectConstructors() {
 		assertThrows(MisannotatedInjecteeException.class, () -> {
-			injector.request(NoInjectCtors.class);
+			new ConstructorScan<>(settings, NoInjectConstructors.class).findInjectableConstructor();
 		});	
 	}
 
+
+	public static class NoInjectConstructors {
+
+		public NoInjectConstructors(Void sig) {}
+	}
+
 	@Test
-	public void testMultipleInjectCtors() {
+	public void testMultipleInjectConstructors() {
 		assertThrows(MisannotatedInjecteeException.class, () -> {
-			injector.request(MultipleInjectCtors.class);
+			new ConstructorScan<>(settings, MultipleInjectConstructors.class).findInjectableConstructor();
 		});
 	}
 
-	public static class NoInjectCtors {
-
-		public NoInjectCtors(@SuppressWarnings("unused") Void sig) {}
-	}
-
-	public static class MultipleInjectCtors {
+	public static class MultipleInjectConstructors {
 
 		@Inject
-		public MultipleInjectCtors() {}
+		public MultipleInjectConstructors() {}
 
 		@Inject
-		public MultipleInjectCtors(@SuppressWarnings("unused") Plane plane) {}
+		public MultipleInjectConstructors(Plane plane) {}
 	}
+
+	@Test
+	public void testWellMadeConstructor() throws NoSuchMethodException {
+		assertEquals(
+				WellMadeConstructor.class.getDeclaredConstructor(Plane.class),
+				new ConstructorScan<>(settings, WellMadeConstructor.class).findInjectableConstructor());
+	}
+
+	public static class WellMadeConstructor {
+		@Inject
+		public WellMadeConstructor(Plane plane) {}
+	}
+
 }

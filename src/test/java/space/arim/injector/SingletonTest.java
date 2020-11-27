@@ -18,6 +18,8 @@
  */
 package space.arim.injector;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -30,33 +32,51 @@ import org.junit.jupiter.api.Test;
 
 public class SingletonTest {
 
+	public interface IFace {}
+
 	@Test
-	public void testInstantiatedOnce() {
+	public void testSingletonsInstantiatedOnce() {
 		Injector injector = Injector.newInjector(new SingletonImplBinder());
-		ISingleton singleton = injector.request(ISingleton.class);
+		IFace singleton = injector.request(IFace.class);
 		assertNotNull(singleton);
-		ISingleton another = injector.request(ISingleton.class);
-		assertTrue(singleton == another);
+		assertEquals(SingletonImpl.class, singleton.getClass(), "Binding failure");
+		assertTrue(singleton == injector.request(IFace.class), "Re-requested singleton must be same instance");
 	}
 
-	public interface ISingleton {}
-
 	@Singleton
-	public static class SingletonImpl implements ISingleton {
+	public static class SingletonImpl implements IFace {
 
 		private static final AtomicBoolean instantiated = new AtomicBoolean(false);
 
 		@Inject
 		public SingletonImpl() {
-			boolean firstInstantiation = instantiated.compareAndSet(false, true);
-			assertTrue(firstInstantiation);
+			assertTrue(instantiated.compareAndSet(false, true), "Instantiated multiple times");
 		}
 	}
 
 	public static class SingletonImplBinder {
 
-		public ISingleton singleton(SingletonImpl singleton) {
+		public IFace singleton(SingletonImpl singleton) {
 			return singleton;
 		}
 	}
+	
+	@Test
+	public void testNonSingletonsInstantiatedMultipleTimes() {
+		Injector injector = Injector.newInjector(new NonSingletonImplBinder());
+		IFace nonSingleton = injector.request(IFace.class);
+		assertNotNull(nonSingleton);
+		assertEquals(NonSingletonImpl.class, nonSingleton.getClass(), "Binding failure");
+		assertFalse(nonSingleton == injector.request(IFace.class), "Re-requested non-singleton must be different instance");
+	}
+
+	public static class NonSingletonImpl implements IFace {}
+	
+	public static class NonSingletonImplBinder {
+		public IFace singleton(NonSingletonImpl nonSingleton) {
+			return nonSingleton;
+		}
+	}
+	
+	
 }

@@ -18,6 +18,8 @@
  */
 package space.arim.injector.internal;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -36,41 +38,70 @@ public class ExceptionContextTest {
 
 	private final ExceptionContext context = new ExceptionContext();
 
+	private void throwAndRewrapMisannotatedInjecteeException() {
+		try {
+			// Simulate naturally thrown exception
+			throw new MisannotatedInjecteeException();
+		} catch (InjectorException ex) {
+			throw context.rethrow(ex, "some added context");
+		}
+	}
+
 	@Test
 	public void testHardcodedSameException() {
-		assertThrows(MisannotatedInjecteeException.class, () -> {
-			try {
-				// Simulate naturally thrown exception
-				throw new MisannotatedInjecteeException();
-			} catch (InjectorException ex) {
-				throw context.rethrow(ex, "some added context");
-			}
-		});
+		assertThrows(MisannotatedInjecteeException.class, this::throwAndRewrapMisannotatedInjecteeException);
+	}
+
+	@Test
+	public void testHardcodedPreserveCause() {
+		try {
+			throwAndRewrapMisannotatedInjecteeException();
+		} catch (InjectorException ex) {
+			Throwable cause = ex.getCause();
+			assertNotNull(cause, "Cause should be preserved");
+			assertEquals(MisannotatedInjecteeException.class, cause.getClass(), "Cause should have same runtime class");
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static final Class<? extends InjectorException>[] exClasses = (Class<? extends InjectorException>[]) new Class<?>[] {
+		CircularDependencyException.class,
+		InjectionInvocationException.class,
+		InjectorException.class,
+		InjectorInternalFailureException.class,
+		MisannotatedInjecteeException.class,
+		MisconfiguredBindingsException.class
+	};
+
+	private void throwAndRewrap(Class<? extends InjectorException> exClass) {
+		try {
+			reflectivelyThrowException(exClass);
+		} catch (InjectorException ex) {
+			throw context.rethrow(ex, "Exception " + exClass.getName());
+		}
 	}
 
 	@Test
 	public void testComprehensiveSameException() {
-		@SuppressWarnings("unchecked")
-		Class<? extends InjectorException>[] exClasses = (Class<? extends InjectorException>[]) new Class<?>[] {
-			CircularDependencyException.class,
-			InjectionInvocationException.class,
-			InjectorException.class,
-			InjectorInternalFailureException.class,
-			MisannotatedInjecteeException.class,
-			MisconfiguredBindingsException.class
-		};
 		for (Class<? extends InjectorException> exClass : exClasses) {
-			assertThrows(exClass, () -> {
-				try {
-					throwException(exClass);
-				} catch (InjectorException ex) {
-					throw context.rethrow(ex, "Exception " + exClass.getName());
-				}
-			});
+			assertThrows(exClass, () -> throwAndRewrap(exClass));
 		}
 	}
 
-	private static void throwException(Class<? extends InjectorException> exClass) {
+	@Test
+	public void testComprehensivePreserveCause() {
+		for (Class<? extends InjectorException> exClass : exClasses) {
+			try {
+				throwAndRewrap(exClass);
+			} catch (InjectorException ex) {
+				Throwable cause = ex.getCause();
+				assertNotNull(cause, "Cause should be preserved");
+				assertEquals(exClass, cause.getClass(), "Cause should have same runtime class");
+			}
+		}
+	}
+
+	private static void reflectivelyThrowException(Class<? extends InjectorException> exClass) {
 		try {
 			throw exClass.getDeclaredConstructor().newInstance();
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
