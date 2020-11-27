@@ -40,8 +40,7 @@ public class InstantiableDependencyBunch {
 
 	@Override
 	public String toString() {
-		return "InstantiableDependencyBunch [instantiableDependencies=" + Arrays.toString(instantiableDependencies)
-				+ "]";
+		return "dependencies " + Arrays.toString(instantiableDependencies);
 	}
 
 }

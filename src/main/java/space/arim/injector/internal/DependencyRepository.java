@@ -18,14 +18,15 @@
  */
 package space.arim.injector.internal;
 
+import space.arim.injector.Identifier;
 import space.arim.injector.internal.provider.ContextualProvider;
 
 public interface DependencyRepository {
 
 	DependencyRepository getRoot();
 
-	<U> ContextualProvider<U> requestProvider(IdentifierInternal<U> identifier);
+	<U> ContextualProvider<U> requestProvider(Identifier<U> identifier);
 
-	<U> U requestInstance(IdentifierInternal<U> identifier);
+	<U> U requestInstance(Identifier<U> identifier);
 
 }

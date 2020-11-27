@@ -22,6 +22,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.concurrent.ConcurrentMap;
 
+import space.arim.injector.Identifier;
 import space.arim.injector.error.MisconfiguredBindingsException;
 import space.arim.injector.internal.provider.ContextualProvider;
 import space.arim.injector.internal.reflect.ConstructorAsProvider;
@@ -30,15 +31,15 @@ import space.arim.injector.internal.reflect.ConstructorScan;
 public class InjectorImpl implements DependencyRepository {
 
 	private final InjectionSettings settings;
-	private final ConcurrentMap<IdentifierInternal<?>, ContextualProvider<?>> providers;
+	private final ConcurrentMap<Identifier<?>, ContextualProvider<?>> providers;
 
 	public InjectorImpl(InjectionSettings settings,
-			ConcurrentMap<IdentifierInternal<?>, ContextualProvider<?>> providers) {
+			ConcurrentMap<Identifier<?>, ContextualProvider<?>> providers) {
 		this.settings = settings;
 		this.providers = providers;
 	}
 
-	<U> ContextualProvider<U> lookupProvider(IdentifierInternal<U> identifier) {
+	<U> ContextualProvider<U> lookupProvider(Identifier<U> identifier) {
 		@SuppressWarnings("unchecked")
 		ContextualProvider<U> existingProvider = (ContextualProvider<U>) providers.get(identifier);
 		if (existingProvider == null) {
@@ -72,12 +73,12 @@ public class InjectorImpl implements DependencyRepository {
 	}
 
 	@Override
-	public <U> ContextualProvider<U> requestProvider(IdentifierInternal<U> identifier) {
+	public <U> ContextualProvider<U> requestProvider(Identifier<U> identifier) {
 		return new InjectionRequest(this).requestProvider(identifier);
 	}
 
 	@Override
-	public <U> U requestInstance(IdentifierInternal<U> identifier) {
+	public <U> U requestInstance(Identifier<U> identifier) {
 		return new InjectionRequest(this).requestInstance(identifier);
 	}
 

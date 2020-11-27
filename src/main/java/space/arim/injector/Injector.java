@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 import space.arim.injector.error.InjectorException;
-import space.arim.injector.internal.IdentifierInternal;
 import space.arim.injector.internal.InjectionSettings;
 import space.arim.injector.internal.InjectorConfiguration;
 import space.arim.injector.internal.InjectorImpl;
@@ -60,7 +59,7 @@ public final class Injector {
 	 * @throws InjectorException if resolving the type or a dependency somehow failed
 	 */
 	public <U> U request(Class<U> clazz) {
-		return impl.requestInstance(IdentifierInternal.ofType(clazz));
+		return impl.requestInstance(Identifier.ofType(clazz));
 	}
 
 	/**
@@ -72,7 +71,7 @@ public final class Injector {
 	 * @throws InjectorException if resolving the type or a dependency somehow failed
 	 */
 	public <U> U request(Identifier<U> identifier) {
-		return impl.requestInstance(identifier.toInternal());
+		return impl.requestInstance(identifier);
 	}
 
 	/**

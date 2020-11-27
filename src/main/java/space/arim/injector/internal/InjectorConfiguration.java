@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import space.arim.injector.Identifier;
 import space.arim.injector.error.InjectorException;
 import space.arim.injector.error.MisconfiguredBindingsException;
 import space.arim.injector.internal.provider.ContextualProvider;
@@ -46,8 +47,8 @@ public class InjectorConfiguration {
 		this.bindModules = bindModules;
 	}
 
-	public Map<IdentifierInternal<?>, ContextualProvider<?>> configure() {
-		Map<IdentifierInternal<?>, ContextualProvider<?>> providers = new HashMap<>();
+	public Map<Identifier<?>, ContextualProvider<?>> configure() {
+		Map<Identifier<?>, ContextualProvider<?>> providers = new HashMap<>();
 		for (Object bindModule : bindModules) {
 			Objects.requireNonNull(bindModule, "bind module");
 			addBindModule(providers, bindModule);
@@ -55,8 +56,8 @@ public class InjectorConfiguration {
 		return providers;
 	}
 
-	public Map<IdentifierInternal<?>, ContextualProvider<?>> configure(Map<IdentifierInternal<?>, Object> boundInstances) {
-		Map<IdentifierInternal<?>, ContextualProvider<?>> providers = configure();
+	public Map<Identifier<?>, ContextualProvider<?>> configure(Map<Identifier<?>, Object> boundInstances) {
+		Map<Identifier<?>, ContextualProvider<?>> providers = configure();
 
 		boundInstances.forEach((identifier, boundInstance) -> {
 			ContextualProvider<?> previous = providers.put(identifier, new FixedContextualProvider<>(boundInstance));
@@ -67,18 +68,18 @@ public class InjectorConfiguration {
 		return providers;
 	}
 
-	private MisconfiguredBindingsException duplicateBinding(IdentifierInternal<?> identifier, String binding) {
+	private MisconfiguredBindingsException duplicateBinding(Identifier<?> identifier, String binding) {
 		return new MisconfiguredBindingsException(
 				"Failed to bind " + binding + ". Duplicate binding exists for identifier " + identifier);
 	}
 
-	private void addBindModule(Map<IdentifierInternal<?>, ContextualProvider<?>> providers, Object bindModule) {
+	private void addBindModule(Map<Identifier<?>, ContextualProvider<?>> providers, Object bindModule) {
 		for (Method method : bindModule.getClass().getMethods()) {
 			if (method.getDeclaringClass().equals(Object.class) || Modifier.isStatic(method.getModifiers())) {
 				continue;
 			}
 			ContextualProvider<?> provider = createPossiblySingletonMethodProvider(bindModule, method);
-			IdentifierInternal<?> identifier = createIdentifier(method);
+			Identifier<?> identifier = createIdentifier(method);
 			ContextualProvider<?> previous = providers.put(identifier, provider);
 			if (previous != null) {
 				throw duplicateBinding(identifier, "method " + QualifiedNames.forMethod(method));
@@ -86,7 +87,7 @@ public class InjectorConfiguration {
 		}
 	}
 
-	private IdentifierInternal<?> createIdentifier(Method method) {
+	private Identifier<?> createIdentifier(Method method) {
 		IdentifierCreation<?> idCreation = new IdentifierCreation<>(spec, method.getReturnType(), method.getAnnotations());
 		try {
 			return idCreation.createIdentifier();

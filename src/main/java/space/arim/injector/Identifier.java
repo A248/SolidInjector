@@ -21,8 +21,6 @@ package space.arim.injector;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 
-import space.arim.injector.internal.IdentifierInternal;
-
 /**
  * An identifier for a dependency. Includes optional qualifier.
  * 
@@ -38,6 +36,24 @@ public final class Identifier<T> {
 	private Identifier(Class<T> type, Qualifier qualifier) {
 		this.type = Objects.requireNonNull(type, "type");
 		this.qualifier = qualifier;
+	}
+
+	/**
+	 * Gets the type of the identifier
+	 * 
+	 * @return the type
+	 */
+	public Class<T> getType() {
+		return type;
+	}
+
+	/**
+	 * Determines whether this identifier has any sort of qualifier
+	 * 
+	 * @return true if qualified
+	 */
+	public boolean isQualified() {
+		return qualifier != null;
 	}
 
 	/**
@@ -83,17 +99,6 @@ public final class Identifier<T> {
 		return new Identifier<>(type, new NamedQualifier(name));
 	}
 
-	IdentifierInternal<T> toInternal() {
-		if (qualifier == null) {
-			return IdentifierInternal.ofType(type);
-		}
-		if (qualifier instanceof UserQualifier) {
-			return IdentifierInternal.ofTypeAndQualifier(type, ((UserQualifier) qualifier).annotation);
-		} else {
-			return IdentifierInternal.ofTypeAndNamed(type, ((NamedQualifier) qualifier).name);
-		}
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -117,7 +122,7 @@ public final class Identifier<T> {
 
 	@Override
 	public String toString() {
-		return "Identifier [type=" + type + ", qualifier=" + qualifier + "]";
+		return type.getName() + " " + ((qualifier == null) ? "unqualified" : "qualifier " + qualifier);
 	}
 
 	private interface Qualifier {}
@@ -146,13 +151,13 @@ public final class Identifier<T> {
 
 		@Override
 		public String toString() {
-			return "Identifier.UserQualifier [annotation=" + annotation + "]";
+			return "@" + annotation.getSimpleName();
 		}
 	}
 
 	private static class NamedQualifier implements Qualifier {
 
-		final String name;
+		private final String name;
 
 		NamedQualifier(String name) {
 			this.name = Objects.requireNonNull(name, "name");
@@ -173,7 +178,7 @@ public final class Identifier<T> {
 
 		@Override
 		public String toString() {
-			return "Identifier.NamedQualifier [name=" + name + "]";
+			return "@Named(\"" + name + "\")";
 		}
 	}
 

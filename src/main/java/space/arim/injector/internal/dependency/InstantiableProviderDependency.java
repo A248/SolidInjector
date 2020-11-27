@@ -18,19 +18,19 @@
  */
 package space.arim.injector.internal.dependency;
 
+import space.arim.injector.Identifier;
 import space.arim.injector.internal.DependencyRepository;
-import space.arim.injector.internal.IdentifierInternal;
 import space.arim.injector.internal.provider.ContextlessProvider;
 import space.arim.injector.internal.provider.ContextualProvider;
 import space.arim.injector.internal.spec.SpecSupport;
 
 class InstantiableProviderDependency<T> implements InstantiableDependency {
 
-	private final SpecSupport spec;
+	private transient final SpecSupport spec;
 	private final Class<T> providerType;
-	private final IdentifierInternal<?> identifier;
+	private final Identifier<?> identifier;
 
-	InstantiableProviderDependency(SpecSupport spec, Class<T> providerType, IdentifierInternal<?> identifier) {
+	InstantiableProviderDependency(SpecSupport spec, Class<T> providerType, Identifier<?> identifier) {
 		this.spec = spec;
 		this.providerType = providerType;
 		this.identifier = identifier;
@@ -41,6 +41,11 @@ class InstantiableProviderDependency<T> implements InstantiableDependency {
 		ContextualProvider<?> contextualProvider = repository.requestProvider(identifier);
 		ContextlessProvider<?> contextlessProvider = contextualProvider.attachTo(repository.getRoot());
 		return spec.externalize(contextlessProvider, providerType);
+	}
+
+	@Override
+	public String toString() {
+		return "provider dependency [providerType=" + providerType.getName() + ", identifier=" + identifier + "]";
 	}
 
 }

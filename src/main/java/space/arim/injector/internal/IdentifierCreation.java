@@ -20,6 +20,7 @@ package space.arim.injector.internal;
 
 import java.lang.annotation.Annotation;
 
+import space.arim.injector.Identifier;
 import space.arim.injector.error.MisannotatedInjecteeException;
 import space.arim.injector.internal.spec.SpecSupport;
 
@@ -35,16 +36,16 @@ public class IdentifierCreation<U> {
 		this.annotations = annotations;
 	}
 
-	public IdentifierInternal<U> createIdentifier() {
+	public Identifier<U> createIdentifier() {
 		Annotation qualifier = getQualifier();
 		if (qualifier == null) {
-			return IdentifierInternal.ofType(type);
+			return Identifier.ofType(type);
 		}
 		String name = spec.getNamedQualifier(qualifier);
 		if (name != null) {
-			return IdentifierInternal.ofTypeAndNamed(type, name);
+			return Identifier.ofTypeAndNamed(type, name);
 		}
-		return IdentifierInternal.ofTypeAndQualifier(type, qualifier);
+		return Identifier.ofTypeAndQualifier(type, qualifier.annotationType());
 	}
 
 	private Annotation getQualifier() {

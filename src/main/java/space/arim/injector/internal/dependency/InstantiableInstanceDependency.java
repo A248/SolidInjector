@@ -18,20 +18,25 @@
  */
 package space.arim.injector.internal.dependency;
 
+import space.arim.injector.Identifier;
 import space.arim.injector.internal.DependencyRepository;
-import space.arim.injector.internal.IdentifierInternal;
 
 class InstantiableInstanceDependency<T> implements InstantiableDependency {
 
-	private final IdentifierInternal<T> identifier;
+	private final Identifier<T> identifier;
 
-	public InstantiableInstanceDependency(IdentifierInternal<T> identifier) {
+	public InstantiableInstanceDependency(Identifier<T> identifier) {
 		this.identifier = identifier;
 	}
 
 	@Override
 	public T instantiate(DependencyRepository repository) {
 		return repository.requestInstance(identifier);
+	}
+
+	@Override
+	public String toString() {
+		return "instance dependency [identifier=" + identifier + "]";
 	}
 
 }

@@ -21,13 +21,14 @@ package space.arim.injector.internal;
 import java.util.HashSet;
 import java.util.Set;
 
+import space.arim.injector.Identifier;
 import space.arim.injector.error.CircularDependencyException;
 import space.arim.injector.internal.provider.ContextualProvider;
 
 class InjectionRequest implements DependencyRepository {
 
 	private final InjectorImpl injector;
-	private final Set<IdentifierInternal<?>> identifiersInProgress = new HashSet<>();
+	private final Set<Identifier<?>> identifiersInProgress = new HashSet<>();
 
 	InjectionRequest(InjectorImpl injector) {
 		this.injector = injector;
@@ -39,12 +40,12 @@ class InjectionRequest implements DependencyRepository {
 	}
 
 	@Override
-	public <U> ContextualProvider<U> requestProvider(IdentifierInternal<U> identifier) {
+	public <U> ContextualProvider<U> requestProvider(Identifier<U> identifier) {
 		return injector.lookupProvider(identifier);
 	}
 
 	@Override
-	public <U> U requestInstance(IdentifierInternal<U> identifier) {
+	public <U> U requestInstance(Identifier<U> identifier) {
 		boolean added = identifiersInProgress.add(identifier);
 		if (!added) {
 			throw new CircularDependencyException("Circular dependency detected while serving instance for " + identifier);

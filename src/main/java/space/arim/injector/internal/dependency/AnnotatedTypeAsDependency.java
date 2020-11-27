@@ -22,9 +22,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+import space.arim.injector.Identifier;
 import space.arim.injector.error.InjectorInternalFailureException;
 import space.arim.injector.internal.IdentifierCreation;
-import space.arim.injector.internal.IdentifierInternal;
 import space.arim.injector.internal.spec.SpecSupport;
 
 public class AnnotatedTypeAsDependency {
@@ -46,7 +46,7 @@ public class AnnotatedTypeAsDependency {
 			return fromProviderType();
 		}
 		IdentifierCreation<?> identifierCreation = new IdentifierCreation<>(spec, type, annotations);
-		IdentifierInternal<?> identifier = identifierCreation.createIdentifier();
+		Identifier<?> identifier = identifierCreation.createIdentifier();
 		return new InstantiableInstanceDependency<>(identifier);
 	}
 
@@ -63,7 +63,7 @@ public class AnnotatedTypeAsDependency {
 			throw failedGenerics("actual type argument not a Class");
 		}
 		IdentifierCreation<?> identifierCreation = new IdentifierCreation<>(spec, (Class<?>) actualTypeArgument, annotations);
-		IdentifierInternal<?> identifier = identifierCreation.createIdentifier();
+		Identifier<?> identifier = identifierCreation.createIdentifier();
 		Class<?> providerType = this.type;
 		return new InstantiableProviderDependency<>(spec, providerType, identifier);
 	}

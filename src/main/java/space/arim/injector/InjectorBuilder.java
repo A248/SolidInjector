@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import space.arim.injector.error.InjectorException;
 import space.arim.injector.error.MisconfiguredBindingsException;
-import space.arim.injector.internal.IdentifierInternal;
 import space.arim.injector.internal.InjectionSettings;
 import space.arim.injector.internal.InjectorConfiguration;
 import space.arim.injector.internal.InjectorImpl;
@@ -43,7 +42,7 @@ public final class InjectorBuilder {
 
 	private SpecificationSupport specification = SpecificationSupport.AUTO_DETECT;
 	private final Set<Object> bindModules = new HashSet<>();
-	private final Map<IdentifierInternal<?>, Object> boundInstances = new HashMap<>();
+	private final Map<Identifier<?>, Object> boundInstances = new HashMap<>();
 	private boolean privateInjection;
 	private boolean staticInjection;
 
@@ -115,7 +114,7 @@ public final class InjectorBuilder {
 	 *                                        already be bound
 	 */
 	public <U> InjectorBuilder bindInstance(Class<U> clazz, U instance) {
-		bindInstance0(IdentifierInternal.ofType(clazz), instance);
+		bindInstance0(Identifier.ofType(clazz), instance);
 		return this;
 	}
 
@@ -130,11 +129,11 @@ public final class InjectorBuilder {
 	 *                                        be bound
 	 */
 	public <U> InjectorBuilder bindInstance(Identifier<U> identifier, U instance) {
-		bindInstance0(identifier.toInternal(), instance);
+		bindInstance0(identifier, instance);
 		return this;
 	}
 
-	private <U> void bindInstance0(IdentifierInternal<U> identifier, U instance) {
+	private <U> void bindInstance0(Identifier<U> identifier, U instance) {
 		Object previous = boundInstances.put(identifier, instance);
 		if (previous != null) {
 			throw new MisconfiguredBindingsException("Binding already exists for identifier " + identifier
