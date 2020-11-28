@@ -20,7 +20,6 @@ package space.arim.injector;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import jakarta.inject.Named;
 
