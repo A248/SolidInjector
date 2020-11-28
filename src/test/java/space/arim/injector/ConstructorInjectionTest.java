@@ -22,28 +22,34 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.inject.Inject;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 public class ConstructorInjectionTest {
 
-	@Test
-	public void testPublicExplicitCtor() {
-		assertNotNull(Injector.newInjector().request(PublicExplicitCtor.class));
+	@ParameterizedTest
+	@EnumSource
+	public void testPublicExplicitCtor(SpecificationSupport specification) {
+		assertNotNull(InjectorCreator.newInjector(specification).request(PublicExplicitCtor.class));
 	}
 
-	@Test
-	public void testPublicDefaultCtor() {
-		assertNotNull(Injector.newInjector().request(PublicDefaultCtor.class));
+	@ParameterizedTest
+	@EnumSource
+	public void testPublicDefaultCtor(SpecificationSupport specification) {
+		assertNotNull(InjectorCreator.newInjector(specification).request(PublicDefaultCtor.class));
 	}
 
-	@Test
-	public void testPrivateCtor() {
-		Injector injector = new InjectorBuilder().privateInjection(true).build();
+	@ParameterizedTest
+	@EnumSource
+	public void testPrivateCtor(SpecificationSupport specification) {
+		Injector injector = new InjectorBuilder().specification(specification).privateInjection(true).build();
+
 		assertNotNull(injector.request(PrivateCtor.class));
 	}
 
 	public static class PublicExplicitCtor {
 
+		@javax.inject.Inject
 		@Inject
 		public PublicExplicitCtor() {}
 	}
@@ -52,6 +58,7 @@ public class ConstructorInjectionTest {
 
 	public static class PrivateCtor {
 
+		@javax.inject.Inject
 		@Inject
 		private PrivateCtor() {}
 	}

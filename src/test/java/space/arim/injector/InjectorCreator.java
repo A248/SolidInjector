@@ -16,21 +16,16 @@
  * along with SolidInjector. If not, see <https://www.gnu.org/licenses/>
  * and navigate to version 3 of the GNU Lesser General Public License.
  */
-package space.arim.injector.example;
+package space.arim.injector;
 
-import javax.inject.Inject;
+public class InjectorCreator {
 
-public class Plane {
-
-	private final Wing wing;
-
-	@jakarta.inject.Inject
-	@Inject
-	public Plane(Wing wing) {
-		this.wing = wing;
+	public static Injector newInjector(SpecificationSupport specification, Object...bindModules) {
+		return new InjectorBuilder().specification(specification).addBindModules(bindModules).build();
 	}
 
-	public Wing wing() {
-		return wing;
+	public static Injector newInjector(SpecificationSupport specification) {
+		return new InjectorBuilder().specification(specification).build();
 	}
+
 }

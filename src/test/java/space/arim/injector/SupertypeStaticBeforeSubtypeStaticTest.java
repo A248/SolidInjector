@@ -24,23 +24,34 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import space.arim.injector.example.Wing;
 
 public class SupertypeStaticBeforeSubtypeStaticTest {
 
-	@Test
-	public void testSupertypeStaticMethodBeforeSubtypeStaticField() {
-		Injector injector = new InjectorBuilder().staticInjection(true).build();
+	@ParameterizedTest
+	@EnumSource
+	public void testSupertypeStaticMethodBeforeSubtypeStaticField(SpecificationSupport specification) {
+		Injector injector = new InjectorBuilder()
+				.specification(specification)
+				.staticInjection(true)
+				.build();
+
 		Super superObj = injector.request(Sub.class);
 		assertNotNull(superObj);
 		assertNull(Super.witnessedSubclassStaticFieldInjection);
 	}
 
-	@Test
-	public void testSupertypeStaticMethodBeforeSubtypeStaticMethod() {
-		Injector injector = new InjectorBuilder().staticInjection(true).build();
+	@ParameterizedTest
+	@EnumSource
+	public void testSupertypeStaticMethodBeforeSubtypeStaticMethod(SpecificationSupport specification) {
+		Injector injector = new InjectorBuilder()
+				.specification(specification)
+				.staticInjection(true)
+				.build();
+
 		Super superObj = injector.request(Sub.class);
 		assertNotNull(superObj);
 		assertNull(Super.witnessedSubclassStaticMethodInjection);
@@ -58,6 +69,8 @@ public class SupertypeStaticBeforeSubtypeStaticTest {
 
 		static Wing witnessedSubclassStaticFieldInjection;
 		static Wing witnessedSubclassStaticMethodInjection;
+
+		@javax.inject.Inject
 		@Inject
 		public static void superStaticMethodInjection() {
 			assertNull(witnessedSubclassStaticFieldInjection);
@@ -68,10 +81,13 @@ public class SupertypeStaticBeforeSubtypeStaticTest {
 	}
 
 	public static class Sub extends Super {
+
+		@javax.inject.Inject
 		@Inject
 		public static Wing staticFieldInjection;
 		static Wing staticMethodInjection;
 
+		@javax.inject.Inject
 		@Inject
 		public static void injectSubMethod(Wing wing) {
 			Sub.staticMethodInjection = wing;

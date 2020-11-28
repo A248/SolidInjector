@@ -24,34 +24,57 @@ import static org.junit.jupiter.api.Assertions.fail;
 import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import space.arim.injector.example.Plane;
 
 public class MethodInjectionAndSuperclassesFirstTest {
 
-	@Test
-	public void testPublicMethodInjection() {
-		new InjectorBuilder().build().request(ExtendedYuck.class);
+	@ParameterizedTest
+	@EnumSource
+	public void testPublicMethodInjection(SpecificationSupport specification) {
+		Injector injector = InjectorCreator.newInjector(specification);
+
+		assertNotNull(injector.request(ExtendedYuck.class));
 	}
 
-	@Test
-	public void testPrivateMethodInjection() {
-		new InjectorBuilder().privateInjection(true).build().request(ExtendedYuck.class);
+	@ParameterizedTest
+	@EnumSource
+	public void testPrivateMethodInjection(SpecificationSupport specification) {
+		Injector injector = new InjectorBuilder()
+				.specification(specification)
+				.privateInjection(true)
+				.build();
+
+		assertNotNull(injector.request(ExtendedYuck.class));
 	}
 
-	@Test
-	public void testStaticMethodInjection() {
-		new InjectorBuilder().staticInjection(true).build().request(ExtendedYuck.class);
+	@ParameterizedTest
+	@EnumSource
+	public void testStaticMethodInjection(SpecificationSupport specification) {
+		Injector injector = new InjectorBuilder()
+				.specification(specification)
+				.staticInjection(true)
+				.build();
+
+		assertNotNull(injector.request(ExtendedYuck.class));
 	}
 
-	@Test
+	@Test // Static state does not work well with parameterized tests
 	public void testPrivateStaticMethodInjection() {
-		new InjectorBuilder().privateInjection(true).staticInjection(true).build().request(ExtendedYuck.class);
+		Injector injector = new InjectorBuilder()
+				.privateInjection(true)
+				.staticInjection(true)
+				.build();
+
+		assertNotNull(injector.request(ExtendedYuck.class));
 	}
 
 	@SuppressWarnings("unused")
 	public static class ExtendedYuck extends FieldInjectionTest.Yuck {
 
+		@javax.inject.Inject
 		@Inject
 		public void inject(Plane plane) {
 			assertNotNull(plane);
@@ -59,6 +82,7 @@ public class MethodInjectionAndSuperclassesFirstTest {
 			assertNotNull(publicWing, "Superclasses injected first");
 		}
 
+		@javax.inject.Inject
 		@Inject
 		private void injectPrivate(Plane plane) {
 			assertNotNull(plane);
@@ -67,6 +91,7 @@ public class MethodInjectionAndSuperclassesFirstTest {
 			assertNotNull(privateWing(), "Superclasses injected first");
 		}
 
+		@javax.inject.Inject
 		@Inject
 		public static void injectStatic(Plane plane) {
 			assertNotNull(plane);
@@ -74,6 +99,7 @@ public class MethodInjectionAndSuperclassesFirstTest {
 			assertNotNull(disgustingWing, "Superclasses injected first");
 		}
 
+		@javax.inject.Inject
 		@Inject
 		private static void injectPrivateStatic(Plane plane) {
 			assertNotNull(plane);

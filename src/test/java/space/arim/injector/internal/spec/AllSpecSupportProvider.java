@@ -16,21 +16,19 @@
  * along with SolidInjector. If not, see <https://www.gnu.org/licenses/>
  * and navigate to version 3 of the GNU Lesser General Public License.
  */
-package space.arim.injector.example;
+package space.arim.injector.internal.spec;
 
-import javax.inject.Inject;
+import java.util.stream.Stream;
 
-public class Plane {
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
 
-	private final Wing wing;
+public class AllSpecSupportProvider implements ArgumentsProvider {
 
-	@jakarta.inject.Inject
-	@Inject
-	public Plane(Wing wing) {
-		this.wing = wing;
+	@Override
+	public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+		return Stream.of(new JakartaSupport(), new JavaxSupport(), new CombinedSpecSupport()).map(Arguments::of);
 	}
 
-	public Wing wing() {
-		return wing;
-	}
 }

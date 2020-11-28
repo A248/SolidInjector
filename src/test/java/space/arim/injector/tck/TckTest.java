@@ -23,6 +23,7 @@ import org.atinject.tck.auto.Car;
 
 import space.arim.injector.Injector;
 import space.arim.injector.InjectorBuilder;
+import space.arim.injector.SpecificationSupport;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -30,8 +31,13 @@ import junit.framework.TestCase;
 public class TckTest extends TestCase {
 
 	public static Test suite() {
-		Injector injector = new InjectorBuilder().addBindModules(new TckBindings())
-				.privateInjection(true).staticInjection(true).build();
+		Injector injector = new InjectorBuilder()
+				.addBindModules(new TckBindings())
+				.privateInjection(true)
+				.staticInjection(true)
+				.specification(SpecificationSupport.JAVAX)
+				.build();
+
 		Car car = injector.request(Car.class);
 		return Tck.testsFor(car, true, true);
 	}

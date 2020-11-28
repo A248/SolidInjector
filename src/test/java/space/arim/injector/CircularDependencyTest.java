@@ -20,37 +20,45 @@ package space.arim.injector;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import space.arim.injector.error.CircularDependencyException;
 
 public class CircularDependencyTest {
 
-	@Test
-	public void testCircularDependencies() {
-		Injector injector = Injector.newInjector(new CircularBinder());
+	@ParameterizedTest
+	@EnumSource
+	public void testCircularDependencies(SpecificationSupport specification) {
+		Injector injector = InjectorCreator.newInjector(specification, new CircularBinder());
+
 		assertThrows(CircularDependencyException.class, () -> injector.request(Dependent.class));
 	}
 
-	@Test
+	@Test // No use testing Javax - Javax support will not recognise jakarta.inject.Provider
 	public void testBreakWithProviders() {
 		Injector injector = Injector.newInjector(new CircleBreakingBinder());
+
 		assertNotNull(injector.request(Dependent.class));
 		assertNotNull(injector.request(Dependency.class));
 	}
 
 	public interface Dependent {}
 	public static class HardDependent implements Dependent {
+		@javax.inject.Inject
 		@Inject
 		public HardDependent(Dependency dependency) {
 			assertNotNull(dependency);
 		}
 	}
 	public static class FlexibleDependent implements Dependent {
+		@javax.inject.Inject
 		@Inject
 		public FlexibleDependent(Provider<Dependency> provider) {
 			assertNotNull(provider);
@@ -59,6 +67,7 @@ public class CircularDependencyTest {
 
 	public interface Dependency {}
 	public static class DependencyImpl implements Dependency {
+		@javax.inject.Inject
 		@Inject
 		public DependencyImpl(Dependent dependent) {
 			assertNotNull(dependent);

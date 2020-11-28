@@ -20,43 +20,51 @@ package space.arim.injector;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import jakarta.inject.Named;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import space.arim.injector.error.MisconfiguredBindingsException;
 
 public class AutomaticConcreteBindingsTest {
 
-	@Test
-	public void testAutomaticBindingFromConcreteType() {
-		Injector injector = Injector.newInjector();
+	@ParameterizedTest
+	@EnumSource
+	public void testAutomaticBindingFromConcreteType(SpecificationSupport specification) {
+		Injector injector = InjectorCreator.newInjector(specification);
+
 		assertNotNull(injector.request(ConcreteType.class));
 	}
 
-	@Test
-	public void testQualifiedIdentifiersRequireExplicitBindings() {
-		Injector injector = Injector.newInjector();
+	@ParameterizedTest
+	@EnumSource
+	public void testQualifiedIdentifiersRequireExplicitBindings(SpecificationSupport specification) {
+		Injector injector = InjectorCreator.newInjector(specification);
+
 		assertThrows(MisconfiguredBindingsException.class, () -> {
-			injector.request(Identifier.ofTypeAndNamed(ConcreteType.class, QUALIFIER_VALUE));
+			injector.request(Identifier.ofTypeAndNamed(ConcreteType.class, NAMED_VALUE));
 		});
 	}
-	
-	@Test
+
+	@Test // No use testing Javax - Javax support will not recognise jakarta.inject.Named
 	public void testQualifiedIdentifiersWithExplicitBindings() {
 		Injector injector = Injector.newInjector(new BinderOfQualifier());
-		assertNotNull(injector.request(Identifier.ofTypeAndNamed(ConcreteType.class, QUALIFIER_VALUE)));
+
+		assertNotNull(injector.request(Identifier.ofTypeAndNamed(ConcreteType.class, NAMED_VALUE)));
 	}
 
 	public static class ConcreteType {
-		
+
 	}
 
-	private static final String QUALIFIER_VALUE = "qualification";
+	private static final String NAMED_VALUE = "qualification";
 
 	public static class BinderOfQualifier {
-		@Named(QUALIFIER_VALUE)
+		@Named(NAMED_VALUE)
 		public ConcreteType qualified(ConcreteType unqualified) {
 			return unqualified;
 		}

@@ -107,7 +107,8 @@
 				<configuration>
 					<trimStackTrace>false</trimStackTrace>
 					<argLine>-Xverify:none -XX:TieredStopAtLevel=1 -XX:-TieredCompilation
-					--add-modules jakarta.inject,javax.inject</argLine>
+					--add-modules jakarta.inject,javax.inject
+					--add-opens space.arim.injector/space.arim.injector.internal.spec=ALL-UNNAMED</argLine>
 				</configuration>
 			</plugin>
 
@@ -161,7 +162,7 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Test dependencies; Junit Vintage is needed for TCK -->
+		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
@@ -169,6 +170,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency> <!-- Junit Vintage is needed for TCK -->
 			<groupId>org.junit.vintage</groupId>
 			<artifactId>junit-vintage-engine</artifactId>
 			<version>${junit.version}</version>

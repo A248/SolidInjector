@@ -18,22 +18,24 @@
  */
 package space.arim.injector.internal.dependency;
 
+import java.util.Objects;
+
 import space.arim.injector.Identifier;
 import space.arim.injector.internal.DependencyRepository;
 import space.arim.injector.internal.provider.ContextlessProvider;
 import space.arim.injector.internal.provider.ContextualProvider;
 import space.arim.injector.internal.spec.SpecSupport;
 
-class InstantiableProviderDependency<T> implements InstantiableDependency {
+public class InstantiableProviderDependency<T> implements InstantiableDependency {
 
 	private transient final SpecSupport spec;
 	private final Class<T> providerType;
 	private final Identifier<?> identifier;
 
-	InstantiableProviderDependency(SpecSupport spec, Class<T> providerType, Identifier<?> identifier) {
-		this.spec = spec;
-		this.providerType = providerType;
-		this.identifier = identifier;
+	public InstantiableProviderDependency(SpecSupport spec, Class<T> providerType, Identifier<?> identifier) {
+		this.spec = Objects.requireNonNull(spec, "spec");
+		this.providerType = Objects.requireNonNull(providerType, "providerType");
+		this.identifier = Objects.requireNonNull(identifier, "identifier");
 	}
 
 	@Override
@@ -41,6 +43,27 @@ class InstantiableProviderDependency<T> implements InstantiableDependency {
 		ContextualProvider<?> contextualProvider = repository.requestProvider(identifier);
 		ContextlessProvider<?> contextlessProvider = contextualProvider.attachTo(repository.getRoot());
 		return spec.externalize(contextlessProvider, providerType);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + identifier.hashCode();
+		result = prime * result + providerType.hashCode();
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		if (this == object) {
+			return true;
+		}
+		if (!(object instanceof InstantiableProviderDependency)) {
+			return false;
+		}
+		InstantiableProviderDependency<?> other = (InstantiableProviderDependency<?>) object;
+		return identifier.equals(other.identifier) && providerType.equals(other.providerType);
 	}
 
 	@Override

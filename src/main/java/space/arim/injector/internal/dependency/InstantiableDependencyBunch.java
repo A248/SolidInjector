@@ -39,6 +39,21 @@ public class InstantiableDependencyBunch {
 	}
 
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(instantiableDependencies);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		return this == object ||
+				object instanceof InstantiableDependencyBunch &&
+				Arrays.equals(instantiableDependencies, ((InstantiableDependencyBunch) object).instantiableDependencies);
+	}
+
+	@Override
 	public String toString() {
 		return "dependencies " + Arrays.toString(instantiableDependencies);
 	}

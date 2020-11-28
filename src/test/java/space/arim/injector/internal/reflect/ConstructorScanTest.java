@@ -23,32 +23,37 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import jakarta.inject.Inject;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import space.arim.injector.error.MisannotatedInjecteeException;
 import space.arim.injector.example.Plane;
 import space.arim.injector.internal.InjectionSettings;
-import space.arim.injector.internal.spec.SpecDetector;
+import space.arim.injector.internal.spec.AllSpecSupportProvider;
+import space.arim.injector.internal.spec.SpecSupport;
 
 public class ConstructorScanTest {
 
-	private final InjectionSettings settings = new InjectionSettings(SpecDetector.detectedSpec());
+	@ParameterizedTest
+	@ArgumentsSource(AllSpecSupportProvider.class)
+	public void testNoInjectConstructors(SpecSupport spec) {
+		InjectionSettings settings = new InjectionSettings(spec);
 
-	@Test
-	public void testNoInjectConstructors() {
 		assertThrows(MisannotatedInjecteeException.class, () -> {
 			new ConstructorScan<>(settings, NoInjectConstructors.class).findInjectableConstructor();
 		});	
 	}
-
 
 	public static class NoInjectConstructors {
 
 		public NoInjectConstructors(Void sig) {}
 	}
 
-	@Test
-	public void testMultipleInjectConstructors() {
+	@ParameterizedTest
+	@ArgumentsSource(AllSpecSupportProvider.class)
+	public void testMultipleInjectConstructors(SpecSupport spec) {
+		InjectionSettings settings = new InjectionSettings(spec);
+
 		assertThrows(MisannotatedInjecteeException.class, () -> {
 			new ConstructorScan<>(settings, MultipleInjectConstructors.class).findInjectableConstructor();
 		});
@@ -56,21 +61,28 @@ public class ConstructorScanTest {
 
 	public static class MultipleInjectConstructors {
 
+		@javax.inject.Inject
 		@Inject
 		public MultipleInjectConstructors() {}
 
+		@javax.inject.Inject
 		@Inject
 		public MultipleInjectConstructors(Plane plane) {}
 	}
 
-	@Test
-	public void testWellMadeConstructor() throws NoSuchMethodException {
+	@ParameterizedTest
+	@ArgumentsSource(AllSpecSupportProvider.class)
+	public void testWellMadeConstructor(SpecSupport spec) throws NoSuchMethodException {
+		InjectionSettings settings = new InjectionSettings(spec);
+
 		assertEquals(
 				WellMadeConstructor.class.getDeclaredConstructor(Plane.class),
 				new ConstructorScan<>(settings, WellMadeConstructor.class).findInjectableConstructor());
 	}
 
 	public static class WellMadeConstructor {
+
+		@javax.inject.Inject
 		@Inject
 		public WellMadeConstructor(Plane plane) {}
 	}

@@ -18,20 +18,37 @@
  */
 package space.arim.injector.internal.dependency;
 
+import java.util.Objects;
+
 import space.arim.injector.Identifier;
 import space.arim.injector.internal.DependencyRepository;
 
-class InstantiableInstanceDependency<T> implements InstantiableDependency {
+public class InstantiableInstanceDependency<T> implements InstantiableDependency {
 
 	private final Identifier<T> identifier;
 
 	public InstantiableInstanceDependency(Identifier<T> identifier) {
-		this.identifier = identifier;
+		this.identifier = Objects.requireNonNull(identifier, "identifier");
 	}
 
 	@Override
 	public T instantiate(DependencyRepository repository) {
 		return repository.requestInstance(identifier);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + identifier.hashCode();
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		return this == object ||
+				object instanceof InstantiableInstanceDependency &&
+				identifier.equals(((InstantiableInstanceDependency<?>) object).identifier);
 	}
 
 	@Override

@@ -24,31 +24,47 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import space.arim.injector.example.Wing;
 
 public class FieldInjectionTest {
 
-	@Test
-	public void testPublicFieldInjection() {
-		Yuck yuck = new InjectorBuilder().build().request(Yuck.class);
+	@ParameterizedTest
+	@EnumSource
+	public void testPublicFieldInjection(SpecificationSupport specification) {
+		Injector injector = InjectorCreator.newInjector(specification);
+
+		Yuck yuck = injector.request(Yuck.class);
 		assertNotNull(yuck.publicWing);
 
 		assertTrue(yuck.dontInjectFieldsRespected());
 	}
 
-	@Test
-	public void testPrivateFieldInjection() {
-		Yuck yuck = new InjectorBuilder().privateInjection(true).build().request(Yuck.class);
+	@ParameterizedTest
+	@EnumSource
+	public void testPrivateFieldInjection(SpecificationSupport specification) {
+		Injector injector = new InjectorBuilder()
+				.specification(specification)
+				.privateInjection(true)
+				.build();
+
+		Yuck yuck = injector.request(Yuck.class);
 		assertNotNull(yuck.publicWing);
 		assertNotNull(yuck.privateWing());
 
 		assertTrue(yuck.dontInjectFieldsRespected());
 	}
 
-	@Test
+	@Test // Static state does not work well with parameterized tests
 	public void testPrivateStaticFieldInjection() {
-		Yuck yuck = new InjectorBuilder().privateInjection(true).staticInjection(true).build().request(Yuck.class);
+		Injector injector = new InjectorBuilder()
+				.privateInjection(true)
+				.staticInjection(true)
+				.build();
+
+		Yuck yuck = injector.request(Yuck.class);
 		assertNotNull(yuck.publicWing);
 		assertNotNull(Yuck.disgustingWing);
 		assertNotNull(yuck.privateWing());
@@ -63,12 +79,16 @@ public class FieldInjectionTest {
 		private Wing dontInject3;
 		public Wing dontInject4;
 
+		@javax.inject.Inject
 		@Inject
 		public static Wing disgustingWing;
+		@javax.inject.Inject
 		@Inject
 		private static Wing privateStaticWing;
+		@javax.inject.Inject
 		@Inject
 		private Wing privateWing;
+		@javax.inject.Inject
 		@Inject
 		public Wing publicWing;
 
@@ -84,6 +104,11 @@ public class FieldInjectionTest {
 
 		Wing privateWing() {
 			return privateWing;
+		}
+
+		static void clearStaticState() {
+			disgustingWing = null;
+			privateStaticWing = null;
 		}
 	}
 
