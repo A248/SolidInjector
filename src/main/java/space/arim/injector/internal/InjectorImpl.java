@@ -74,7 +74,7 @@ public class InjectorImpl implements DependencyRepository {
 
 	@Override
 	public <U> ContextualProvider<U> requestProvider(Identifier<U> identifier) {
-		return new InjectionRequest(this).requestProvider(identifier);
+		return lookupProvider(identifier);
 	}
 
 	@Override
