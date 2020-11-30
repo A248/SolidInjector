@@ -73,7 +73,7 @@ To instantiate a Plane:
 
 ```java
 Injector injector = Injector.newInjector();
-Plane plane = injector.create(Plane.class);
+Plane plane = injector.request(Plane.class);
 ```
 
 ### Private and Static Injection
@@ -82,7 +82,7 @@ By default, only public instance members (constructors, fields, and methods) are
 
 ```java
 Injector injector = new InjectorBuilder().privateInjection(true).build();
-Plane plane = injector.create(Plane.class);
+Plane plane = injector.request(Plane.class);
 ```
 
 * When using JPMS, private injection requires modules to be *open* to SolidInjector.
@@ -129,8 +129,8 @@ You may add as many modules to the injector as desired. Ordering is unimportant:
 ```java
 Injector injector = Injector.newInjector(new AirportModule(), new TrainStationModule());
 
-Plane plane = injector.create(Plane.class);
-Train train = injector.create(Train.class);
+Plane plane = injector.request(Plane.class);
+Train train = injector.request(Train.class);
 ```
 
 **Binding Method Details**
