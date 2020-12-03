@@ -63,6 +63,10 @@ class InjectableMemberScan {
 	}
 
 	final List<PostConstructorInjection> scanInjections() {
+		/*
+		 * Spec requires fields and methods are injected in superclasses first.
+		 * Traverse hierarchy once, accumulating injections, then reverse resulting list
+		 */
 		Set<DistinctMethod> distinctInstanceMethods = new HashSet<>();
 		List<PostConstructorInjection> injections = new ArrayList<>();
 		Class<?> clazz = subject;
@@ -92,7 +96,6 @@ class InjectableMemberScan {
 
 			clazz = clazz.getSuperclass();
 		}
-		// Reverse because specification requires fields and methods are injected in superclasses first
 		Collections.reverse(injections);
 		return injections;
 	}
@@ -112,7 +115,7 @@ class InjectableMemberScan {
 	private PostConstructorInjection injectionFor(Field field) {
 		return new FieldInjection(field,
 				new AnnotatedTypeAsDependency(settings.spec(), field.getType(),
-				field.getGenericType(), field.getAnnotations()).createDependency());
+						field.getAnnotations(), field.getAnnotatedType()).createDependency());
 	}
 
 }

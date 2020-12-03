@@ -18,10 +18,13 @@
  */
 package space.arim.injector.internal.reflect;
 
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 
 import jakarta.inject.Named;
@@ -97,6 +100,7 @@ public class ExecutableDependenciesTest {
 
 	@Qualifier
 	@Retention(RUNTIME)
+	@Target({PARAMETER, TYPE_USE})
 	private @interface BusyAirport {}
 
 	@SuppressWarnings("unused")
@@ -136,6 +140,23 @@ public class ExecutableDependenciesTest {
 								Identifier.ofTypeAndQualifier(TrafficControl.class, BusyAirport.class))
 				}),
 				fromMethod(spec, "methodQualifiedProviderDependencies"));
+	}
+
+	// Qualified provider using TYPE_USE
+
+	@SuppressWarnings("unused")
+	private void methodQualifiedProviderWithTypeUseDependency(Provider<@BusyAirport TrafficControl> trafficControl) {}
+
+	@ParameterizedTest
+	@ArgumentsSource(JakartaSpecSupportProvider.class)
+	public void testMethodQualifiedProviderWithTypeUseDependency(SpecSupport spec)
+			throws NoSuchMethodException, SecurityException {
+		assertEquals(
+				new InstantiableDependencyBunch(new InstantiableDependency[] {
+						new InstantiableProviderDependency<>(spec, Provider.class,
+								Identifier.ofTypeAndQualifier(TrafficControl.class, BusyAirport.class))
+				}),
+				fromMethod(spec, "methodQualifiedProviderWithTypeUseDependency"));
 	}
 
 }

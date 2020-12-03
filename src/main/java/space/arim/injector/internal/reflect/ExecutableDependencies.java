@@ -18,9 +18,8 @@
  */
 package space.arim.injector.internal.reflect;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Executable;
-import java.lang.reflect.Type;
+import java.lang.reflect.Parameter;
 
 import space.arim.injector.error.InjectorException;
 import space.arim.injector.internal.ExceptionContext;
@@ -40,18 +39,13 @@ public class ExecutableDependencies {
 	}
 
 	public InstantiableDependencyBunch collectDependencies() {
-		Class<?>[] parameterTypes = executable.getParameterTypes();
-		Type[] genericParameterTypes = executable.getGenericParameterTypes();
-		Annotation[][] parameterAnnotations = executable.getParameterAnnotations();
-		InstantiableDependency[] instantiableDependencies = new InstantiableDependency[parameterTypes.length];
+		Parameter[] parameters = executable.getParameters();
+		InstantiableDependency[] instantiableDependencies = new InstantiableDependency[parameters.length];
 
-		for (int n = 0; n < parameterTypes.length; n++) {
-			Class<?> type = parameterTypes[n];
-			Type genericType = genericParameterTypes[n];
-			Annotation[] annotations = parameterAnnotations[n];
+		for (int n = 0; n < parameters.length; n++) {
 			InstantiableDependency dependency;
 			try {
-				dependency = new AnnotatedTypeAsDependency(spec, type, genericType, annotations).createDependency();
+				dependency = new AnnotatedTypeAsDependency(spec, parameters[n]).createDependency();
 			} catch (InjectorException ex) {
 				throw new ExceptionContext().rethrow(ex, "On executable " + QualifiedNames.forExecutable(executable));
 			}

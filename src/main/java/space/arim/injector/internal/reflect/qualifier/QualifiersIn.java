@@ -16,34 +16,22 @@
  * along with SolidInjector. If not, see <https://www.gnu.org/licenses/>
  * and navigate to version 3 of the GNU Lesser General Public License.
  */
-package space.arim.injector.internal;
+package space.arim.injector.internal.reflect.qualifier;
 
 import java.lang.annotation.Annotation;
 
-import space.arim.injector.Identifier;
-import space.arim.injector.internal.reflect.qualifier.QualifiersIn;
+import space.arim.injector.error.MisannotatedInjecteeException;
 import space.arim.injector.internal.spec.SpecSupport;
 
-public class IdentifierCreation<U> {
+public interface QualifiersIn {
 
-	private final Class<U> type;
-	private final QualifiersIn qualifiersIn;
-
-	public IdentifierCreation(Class<U> type, QualifiersIn qualifiersIn) {
-		this.type = type;
-		this.qualifiersIn = qualifiersIn;
-	}
-
-	public Identifier<U> createIdentifier(SpecSupport spec) {
-		Annotation qualifier = qualifiersIn.getQualifier(spec);
-		if (qualifier == null) {
-			return Identifier.ofType(type);
-		}
-		String name = spec.getNamedQualifier(qualifier);
-		if (name != null) {
-			return Identifier.ofTypeAndNamed(type, name);
-		}
-		return Identifier.ofTypeAndQualifier(type, qualifier.annotationType());
-	}
+	/**
+	 * Gets the qualifier. If multiple are founds, throws.
+	 * 
+	 * @param spec the spec
+	 * @return the qualifier, {@code null} if there is none
+	 * @throws MisannotatedInjecteeException if multiple qualifiers are present
+	 */
+	Annotation getQualifier(SpecSupport spec);
 
 }

@@ -35,6 +35,7 @@ import space.arim.injector.internal.provider.SingletonContextualProvider;
 import space.arim.injector.internal.reflect.ExecutableDependencies;
 import space.arim.injector.internal.reflect.MethodContextualProvider;
 import space.arim.injector.internal.reflect.QualifiedNames;
+import space.arim.injector.internal.reflect.qualifier.QualifiersInAnnotations;
 import space.arim.injector.internal.spec.SpecSupport;
 
 public class InjectorConfiguration {
@@ -88,9 +89,9 @@ public class InjectorConfiguration {
 	}
 
 	private Identifier<?> createIdentifier(Method method) {
-		IdentifierCreation<?> idCreation = new IdentifierCreation<>(spec, method.getReturnType(), method.getAnnotations());
 		try {
-			return idCreation.createIdentifier();
+			return new IdentifierCreation<>(method.getReturnType(),
+					new QualifiersInAnnotations(method.getAnnotations())).createIdentifier(spec);
 		} catch (InjectorException ex) {
 			throw new ExceptionContext().rethrow(ex, "On method " + QualifiedNames.forMethod(method));
 		}

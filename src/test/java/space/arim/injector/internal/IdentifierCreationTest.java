@@ -33,6 +33,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import space.arim.injector.Identifier;
 import space.arim.injector.error.MisannotatedInjecteeException;
+import space.arim.injector.internal.reflect.qualifier.QualifiersInAnnotations;
 import space.arim.injector.internal.spec.JakartaSpecSupportProvider;
 import space.arim.injector.internal.spec.SpecSupport;
 
@@ -47,7 +48,8 @@ public class IdentifierCreationTest {
 	private Identifier<IdentifierCreationTest> createFromMethod(SpecSupport spec, String methodName)
 			throws NoSuchMethodException, SecurityException {
 		Annotation[] annotations = getClass().getDeclaredMethod(methodName).getAnnotations();
-		return new IdentifierCreation<>(spec, IdentifierCreationTest.class, annotations).createIdentifier();
+		return new IdentifierCreation<>(IdentifierCreationTest.class,
+				new QualifiersInAnnotations(annotations)).createIdentifier(spec);
 	}
 
 	// Unqualified

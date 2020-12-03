@@ -16,34 +16,38 @@
  * along with SolidInjector. If not, see <https://www.gnu.org/licenses/>
  * and navigate to version 3 of the GNU Lesser General Public License.
  */
-package space.arim.injector.internal;
+package space.arim.injector.internal.reflect.qualifier;
 
 import java.lang.annotation.Annotation;
 
-import space.arim.injector.Identifier;
-import space.arim.injector.internal.reflect.qualifier.QualifiersIn;
+import space.arim.injector.error.MisannotatedInjecteeException;
 import space.arim.injector.internal.spec.SpecSupport;
 
-public class IdentifierCreation<U> {
+public class QualifiersInCombined implements QualifiersIn {
 
-	private final Class<U> type;
-	private final QualifiersIn qualifiersIn;
+	private final QualifiersIn one;
+	private final QualifiersIn two;
 
-	public IdentifierCreation(Class<U> type, QualifiersIn qualifiersIn) {
-		this.type = type;
-		this.qualifiersIn = qualifiersIn;
+	public QualifiersInCombined(QualifiersIn one, QualifiersIn two) {
+		this.one = one;
+		this.two = two;
 	}
 
-	public Identifier<U> createIdentifier(SpecSupport spec) {
-		Annotation qualifier = qualifiersIn.getQualifier(spec);
-		if (qualifier == null) {
-			return Identifier.ofType(type);
+	@Override
+	public Annotation getQualifier(SpecSupport spec) {
+		Annotation firstQualifier = one.getQualifier(spec);
+		Annotation secondQualifier = two.getQualifier(spec);
+		if (firstQualifier != null && secondQualifier != null) {
+			throw new MisannotatedInjecteeException(
+					"Duplicate @Qualifier " + secondQualifier + ", " + firstQualifier + " is already present");
 		}
-		String name = spec.getNamedQualifier(qualifier);
-		if (name != null) {
-			return Identifier.ofTypeAndNamed(type, name);
+		if (firstQualifier != null) {
+			return firstQualifier;
 		}
-		return Identifier.ofTypeAndQualifier(type, qualifier.annotationType());
+		if (secondQualifier != null) {
+			return secondQualifier;
+		}
+		return null;
 	}
 
 }
