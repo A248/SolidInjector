@@ -1,5 +1,5 @@
 
-# SolidInjector
+# SolidInjector [![Maven Central](https://maven-badges.herokuapp.com/maven-central/space.arim.injector/injector/badge.svg)](https://maven-badges.herokuapp.com/maven-central/space.arim.injector/injector)
 
 Modern and lightweight injector supporting javax and jarkarta.
 
@@ -19,21 +19,9 @@ There are no dependencies except JDK 8, and a choice of javax.inject or jakarta.
 
 ### Dependency
 
-The JPMS Module name is `space.arim.injector`.
+The dependency is `space.arim.injector:injector`. It is deployed to Central.
 
-The dependency is
-
-```
-space.arim.injector:injector:{VERSION}
-```
-
-The repository is
-
-```
-https://mvn-repo.arim.space/lesser-gpl3/
-```
-
-A thanks to Cloudsmith for providing free repositories for FOSS.
+For those using JPMS, the module name is `space.arim.injector`
 
 ## Injection Usage
 
