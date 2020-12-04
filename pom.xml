@@ -5,7 +5,7 @@
 	
 	<groupId>space.arim.injector</groupId>
 	<artifactId>injector</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 	
 	<name>SolidInjector</name>
 	<description>Modern and lightweight injector supporting javax and jarkarta.</description>
