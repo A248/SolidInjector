@@ -16,10 +16,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<junit.version>5.7.0</junit.version>
-		<slf4j.version>1.7.30</slf4j.version>
-
-		<jakarta-inject.version>2.0.0</jakarta-inject.version>
-		<javax-inject.version>1.0.0</javax-inject.version>
 	</properties>
 	
 	<scm>
@@ -107,7 +103,7 @@
 				<configuration>
 					<trimStackTrace>false</trimStackTrace>
 					<argLine>-Xverify:none -XX:TieredStopAtLevel=1 -XX:-TieredCompilation
-					--add-modules jakarta.inject,javax.inject
+					--add-modules jakarta.inject,java.inject
 					--add-opens space.arim.injector/space.arim.injector.internal.spec=ALL-UNNAMED</argLine>
 				</configuration>
 			</plugin>
@@ -160,6 +156,17 @@
 			<artifactId>jakarta.inject-api</artifactId>
 			<version>2.0.0</version>
 			<optional>true</optional>
+		</dependency>
+		<!--
+		See module-info for a description of the state of JPMS with respect to the javax.inject namespace
+		 It would normally not be possible to depend on both jakarta.inject 1.0.3
+		and 2.0.0. However, this hack is required for building against the module java.inject.
+		-->
+		<dependency>
+			<groupId>jakarta.inject.</groupId>
+			<artifactId>jakarta.inject-api</artifactId>
+			<version>1.0.3</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Test dependencies -->

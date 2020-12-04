@@ -156,3 +156,11 @@ With regards to SolidInjector:
 
 Circular dependencies are detected, and an exception is thrown. `Provider` can be used to break circular dependencies. Alternatively, consider refactoring.
 
+### JPMS
+
+jakarta.inject has an 'Automatic-Module-Name' and is therefore safe to use on the modular classpath.
+
+javax.inject is in somewhat of a predicament. The original JSR-330 does not define its module name. However, the unofficial continuation of javax.inject under Jakarta EE 8 does define `java.inject` as the module name, see [here](https://github.com/eclipse-ee4j/injection-api/issues/14). This is also the logical module name which was discussed for JSR-330.
+
+Therefore, when using javax.inject in a modular environment, use the 'java.inject' module name and the Jakarta EE 8 continuation of javax.inject
+
