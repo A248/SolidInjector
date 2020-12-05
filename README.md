@@ -1,5 +1,5 @@
 
-# SolidInjector [![Maven Central](https://maven-badges.herokuapp.com/maven-central/space.arim.injector/injector/badge.svg)](https://maven-badges.herokuapp.com/maven-central/space.arim.injector/injector)
+# SolidInjector [![Maven Central](https://img.shields.io/maven-central/v/space.arim.injector/injector.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22space.arim.injector%22%20AND%20a:%22injector%22)
 
 Modern and lightweight injector supporting javax and jarkarta.
 
