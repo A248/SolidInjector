@@ -1,6 +1,8 @@
 
 # SolidInjector [![Maven Central](https://img.shields.io/maven-central/v/space.arim.injector/injector.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22space.arim.injector%22%20AND%20a:%22injector%22)
 
+# SolidInjector [![Maven Central](https://img.shields.io/maven-central/v/space.arim.injector/injector?color=brightgreen&label=maven%20central)](https://mvnrepository.com/artifact/space.arim.injector/injector) [![Javadoc](https://javadoc.io/badge2/space.arim.injector/injector/javadoc.svg)](https://javadoc.io/doc/space.arim.injector/injector)
+
 Modern and lightweight injector supporting javax and jarkarta.
 
 ## Introduction
@@ -22,6 +24,8 @@ There are no dependencies except JDK 8, and a choice of javax.inject or jakarta.
 The dependency is `space.arim.injector:injector`. It is deployed to Central.
 
 For those using JPMS, the module name is `space.arim.injector`
+
+Though the public API is small, the javadocs may be browsed using [here](https://javadoc.io/doc/space.arim.injector/injector) or in your IDE.
 
 ## Injection Usage
 
