@@ -1,6 +1,4 @@
 
-# SolidInjector [![Maven Central](https://img.shields.io/maven-central/v/space.arim.injector/injector.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22space.arim.injector%22%20AND%20a:%22injector%22)
-
 # SolidInjector [![Maven Central](https://img.shields.io/maven-central/v/space.arim.injector/injector?color=brightgreen&label=maven%20central)](https://mvnrepository.com/artifact/space.arim.injector/injector) [![Javadoc](https://javadoc.io/badge2/space.arim.injector/injector/javadoc.svg)](https://javadoc.io/doc/space.arim.injector/injector)
 
 Modern and lightweight injector supporting javax and jarkarta.
