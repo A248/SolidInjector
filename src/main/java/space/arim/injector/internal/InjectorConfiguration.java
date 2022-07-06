@@ -1,36 +1,33 @@
-/* 
+/*
  * SolidInjector
- * Copyright © 2020 Anand Beh <https://www.arim.space>
- * 
+ * Copyright © 2022 Anand Beh
+ *
  * SolidInjector is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SolidInjector is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with SolidInjector. If not, see <https://www.gnu.org/licenses/>
  * and navigate to version 3 of the GNU Lesser General Public License.
  */
+
 package space.arim.injector.internal;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 import space.arim.injector.Identifier;
+import space.arim.injector.MultiBinding;
 import space.arim.injector.error.InjectorException;
 import space.arim.injector.error.MisconfiguredBindingsException;
 import space.arim.injector.internal.provider.ContextualProvider;
 import space.arim.injector.internal.provider.FixedContextualProvider;
+import space.arim.injector.internal.provider.MultiBindableContextualProvider;
 import space.arim.injector.internal.provider.NullCheckedContextualProvider;
+import space.arim.injector.internal.provider.ProviderMap;
 import space.arim.injector.internal.provider.SingletonContextualProvider;
 import space.arim.injector.internal.reflect.ExecutableDependencies;
 import space.arim.injector.internal.reflect.MethodContextualProvider;
@@ -38,52 +35,59 @@ import space.arim.injector.internal.reflect.QualifiedNames;
 import space.arim.injector.internal.reflect.qualifier.QualifiersInAnnotations;
 import space.arim.injector.internal.spec.SpecSupport;
 
-public class InjectorConfiguration {
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+
+public final class InjectorConfiguration {
 
 	private final SpecSupport spec;
 	private final Collection<Object> bindModules;
+	private final ProviderMap providerMap;
 
-	public InjectorConfiguration(SpecSupport spec, Collection<Object> bindModules) {
+	public InjectorConfiguration(SpecSupport spec, Collection<Object> bindModules, ProviderMap providerMap) {
 		this.spec = spec;
 		this.bindModules = bindModules;
+		this.providerMap = providerMap;
 	}
 
-	public Map<Identifier<?>, ContextualProvider<?>> configure() {
-		Map<Identifier<?>, ContextualProvider<?>> providers = new HashMap<>();
+	public ProviderMap configure() {
+		return configure(Collections.emptyMap());
+	}
+
+	public ProviderMap configure(Map<Identifier<?>, Object> boundInstances) {
+
 		for (Object bindModule : bindModules) {
 			Objects.requireNonNull(bindModule, "bind module");
-			addBindModule(providers, bindModule);
+			addBindModule(bindModule);
 		}
-		return providers;
-	}
-
-	public Map<Identifier<?>, ContextualProvider<?>> configure(Map<Identifier<?>, Object> boundInstances) {
-		Map<Identifier<?>, ContextualProvider<?>> providers = configure();
-
 		boundInstances.forEach((identifier, boundInstance) -> {
-			ContextualProvider<?> previous = providers.put(identifier, new FixedContextualProvider<>(boundInstance));
-			if (previous != null) {
-				throw duplicateBinding(identifier, "instance " + boundInstance);
+			String failureReason = providerMap.installProvider(identifier, new FixedContextualProvider<>(boundInstance));
+			if (failureReason != null) {
+				throw failedToBind("instance " + boundInstance, failureReason);
 			}
 		});
-		return providers;
+		return providerMap.makeConcurrent();
 	}
 
-	private MisconfiguredBindingsException duplicateBinding(Identifier<?> identifier, String binding) {
+	private MisconfiguredBindingsException failedToBind(String binding, String reason) {
 		return new MisconfiguredBindingsException(
-				"Failed to bind " + binding + ". Duplicate binding exists for identifier " + identifier);
+				"Failed to bind " + binding + ". " + reason);
 	}
 
-	private void addBindModule(Map<Identifier<?>, ContextualProvider<?>> providers, Object bindModule) {
+	private void addBindModule(Object bindModule) {
 		for (Method method : bindModule.getClass().getMethods()) {
 			if (method.getDeclaringClass().equals(Object.class) || Modifier.isStatic(method.getModifiers())) {
 				continue;
 			}
-			ContextualProvider<?> provider = createPossiblySingletonMethodProvider(bindModule, method);
+			ContextualProvider<?> provider = createMethodProvider(bindModule, method);
 			Identifier<?> identifier = createIdentifier(method);
-			ContextualProvider<?> previous = providers.put(identifier, provider);
-			if (previous != null) {
-				throw duplicateBinding(identifier, "method " + QualifiedNames.forMethod(method));
+			String failureReason = providerMap.installProvider(identifier, provider);
+			if (failureReason != null) {
+				throw failedToBind("method " + QualifiedNames.forMethod(method), failureReason);
 			}
 		}
 	}
@@ -97,18 +101,20 @@ public class InjectorConfiguration {
 		}
 	}
 
-	private ContextualProvider<?> createPossiblySingletonMethodProvider(Object bindModule, Method method) {
-		ContextualProvider<?> provider = createMethodProvider(bindModule, method);
+	private ContextualProvider<?> createMethodProvider(Object bindModule, Method method) {
+		ContextualProvider<?> provider =
+				new NullCheckedContextualProvider<>(
+						new MethodContextualProvider<>(
+								bindModule, method,
+								new ExecutableDependencies(spec, method).collectDependencies()
+						));
 		if (spec.hasSingletonAnnotation(method)) {
-			return new SingletonContextualProvider<>(provider);
+			provider = new SingletonContextualProvider<>(provider);
+		}
+		if (providerMap.permitsMultiBindings() && method.isAnnotationPresent(MultiBinding.class)) {
+			provider = new MultiBindableContextualProvider<>(provider);
 		}
 		return provider;
-	}
-
-	private ContextualProvider<?> createMethodProvider(Object bindModule, Method method) {
-		return new NullCheckedContextualProvider<>(
-				new MethodContextualProvider<>(bindModule, method,
-				new ExecutableDependencies(spec, method).collectDependencies()));
 	}
 
 }

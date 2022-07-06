@@ -1,49 +1,47 @@
-/* 
+/*
  * SolidInjector
- * Copyright © 2020 Anand Beh <https://www.arim.space>
- * 
+ * Copyright © 2022 Anand Beh
+ *
  * SolidInjector is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SolidInjector is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with SolidInjector. If not, see <https://www.gnu.org/licenses/>
  * and navigate to version 3 of the GNU Lesser General Public License.
  */
+
 package space.arim.injector.internal;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Set;
 
 import space.arim.injector.Identifier;
 import space.arim.injector.error.MisconfiguredBindingsException;
 import space.arim.injector.internal.provider.ContextualProvider;
+import space.arim.injector.internal.provider.ProviderMap;
 import space.arim.injector.internal.reflect.ConstructorAsProvider;
 import space.arim.injector.internal.reflect.ConstructorScan;
 
-public class InjectorImpl implements DependencyRepository {
+public final class InjectorImpl implements DependencyRepository {
 
 	private final InjectionSettings settings;
-	private final ConcurrentMap<Identifier<?>, ContextualProvider<?>> providers;
+	private final ProviderMap providerMap;
 
-	public InjectorImpl(InjectionSettings settings,
-			ConcurrentMap<Identifier<?>, ContextualProvider<?>> providers) {
+	public InjectorImpl(InjectionSettings settings, ProviderMap providerMap) {
 		this.settings = settings;
-		this.providers = providers;
+		this.providerMap = providerMap;
 	}
 
-	<U> ContextualProvider<U> lookupProvider(Identifier<U> identifier) {
-		@SuppressWarnings("unchecked")
-		ContextualProvider<U> existingProvider = (ContextualProvider<U>) providers.get(identifier);
-		if (existingProvider == null) {
-			// No existing provider, create one if possible
+	<U> ContextualProvider<U> lookupProvider(Identifier<U> ident) {
+		return providerMap.requestSingleProvider(ident, (identifier) -> {
 			if (identifier.isQualified()) {
 				throw new MisconfiguredBindingsException("No binding found for qualified identifier " + identifier);
 			}
@@ -52,13 +50,8 @@ public class InjectorImpl implements DependencyRepository {
 				throw new MisconfiguredBindingsException(
 						"No binding found for abstract identifier " + identifier);
 			}
-			ContextualProvider<U> newProvider = createConcreteProvider(type);
-			// Optimistic update
-			@SuppressWarnings("unchecked")
-			ContextualProvider<U> previousProvider = (ContextualProvider<U>) providers.putIfAbsent(identifier, newProvider);
-			return (previousProvider != null) ? previousProvider : newProvider;
-		}
-		return existingProvider;
+			return createConcreteProvider(type);
+		});
 	}
 
 	private <U> ContextualProvider<U> createConcreteProvider(Class<U> type) {
@@ -80,6 +73,16 @@ public class InjectorImpl implements DependencyRepository {
 	@Override
 	public <U> U requestInstance(Identifier<U> identifier) {
 		return new InjectionRequest(this).requestInstance(identifier);
+	}
+
+	@Override
+	public <U> ContextualProvider<Set<U>> requestMultipleProviders(Identifier<U> identifier) {
+		return providerMap.requestMultipleProviders(identifier);
+	}
+
+	@Override
+	public <U> Set<U> requestMultipleInstances(Identifier<U> identifier) {
+		return new InjectionRequest(this).requestMultipleInstances(identifier);
 	}
 
 }

@@ -1,21 +1,22 @@
-/* 
+/*
  * SolidInjector
- * Copyright © 2020 Anand Beh <https://www.arim.space>
- * 
+ * Copyright © 2022 Anand Beh
+ *
  * SolidInjector is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SolidInjector is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with SolidInjector. If not, see <https://www.gnu.org/licenses/>
  * and navigate to version 3 of the GNU Lesser General Public License.
  */
+
 package space.arim.injector.internal;
 
 import java.util.HashSet;
@@ -46,13 +47,43 @@ class InjectionRequest implements DependencyRepository {
 
 	@Override
 	public <U> U requestInstance(Identifier<U> identifier) {
-		boolean added = identifiersInProgress.add(identifier);
-		if (!added) {
-			throw new CircularDependencyException("Circular dependency detected while serving instance for " + identifier);
+		U instance;
+		enterIdentifier(identifier);
+		try {
+			instance = requestProvider(identifier).provideUsing(this);
+		} finally {
+			exitIdentifier(identifier);
 		}
-		U instance = requestProvider(identifier).provideUsing(this);
-		identifiersInProgress.remove(identifier);
 		return instance;
 	}
 
+	@Override
+	public <U> ContextualProvider<Set<U>> requestMultipleProviders(Identifier<U> identifier) {
+		return injector.requestMultipleProviders(identifier);
+	}
+
+	@Override
+	public <U> Set<U> requestMultipleInstances(Identifier<U> identifier) {
+		Set<U> instances;
+		enterIdentifier(identifier);
+		try {
+			instances = requestMultipleProviders(identifier).provideUsing(this);
+		} finally {
+			exitIdentifier(identifier);
+		}
+		return instances;
+	}
+
+	// Circular request detection
+
+	private void enterIdentifier(Identifier<?> identifier) {
+		boolean added = identifiersInProgress.add(identifier);
+		if (!added) {
+			throw new CircularDependencyException("Circular dependency detected while serving request for " + identifier);
+		}
+	}
+
+	private void exitIdentifier(Identifier<?> identifier) {
+		identifiersInProgress.remove(identifier);
+	}
 }

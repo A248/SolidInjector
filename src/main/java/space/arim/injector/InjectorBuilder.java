@@ -1,36 +1,39 @@
-/* 
+/*
  * SolidInjector
- * Copyright © 2020 Anand Beh <https://www.arim.space>
- * 
+ * Copyright © 2022 Anand Beh
+ *
  * SolidInjector is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SolidInjector is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with SolidInjector. If not, see <https://www.gnu.org/licenses/>
  * and navigate to version 3 of the GNU Lesser General Public License.
  */
-package space.arim.injector;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+package space.arim.injector;
 
 import space.arim.injector.error.InjectorException;
 import space.arim.injector.error.MisconfiguredBindingsException;
 import space.arim.injector.internal.InjectionSettings;
 import space.arim.injector.internal.InjectorConfiguration;
 import space.arim.injector.internal.InjectorImpl;
+import space.arim.injector.internal.provider.MultiBindingProviderMap;
+import space.arim.injector.internal.provider.ProviderMap;
+import space.arim.injector.internal.provider.SimpleProviderMap;
 import space.arim.injector.internal.spec.SpecSupport;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Builder of {@link Injector}s. Not thread safe.
@@ -45,6 +48,7 @@ public final class InjectorBuilder {
 	private final Map<Identifier<?>, Object> boundInstances = new HashMap<>();
 	private boolean privateInjection;
 	private boolean staticInjection;
+	private boolean multiBindings;
 
 	/**
 	 * Sets the specification to support ({@code javax.inject} or
@@ -86,6 +90,20 @@ public final class InjectorBuilder {
 	 */
 	public InjectorBuilder staticInjection(boolean staticInjection) {
 		this.staticInjection = staticInjection;
+		return this;
+	}
+
+	/**
+	 * Sets whether to enable the multibinding feature. Disabled by default. <br>
+	 * <br>
+	 * Note that the multibinding feature is outside the specification. It is suggested
+	 * to leave disabled unless otherwise necessary.
+	 *
+	 * @param multiBindings whether to enable multiple bindings
+	 * @return this builder
+	 */
+	public InjectorBuilder multiBindings(boolean multiBindings) {
+		this.multiBindings = multiBindings;
 		return this;
 	}
 
@@ -148,12 +166,13 @@ public final class InjectorBuilder {
 	 * @throws InjectorException if the modules are misconfigured or misannotated
 	 */
 	public Injector build() {
+		ProviderMap providerMap = (multiBindings) ? new MultiBindingProviderMap() : new SimpleProviderMap();
 		SpecSupport specification = this.specification.toInternal();
 		return new Injector(
 				new InjectorImpl(
 						new InjectionSettings(specification, privateInjection, staticInjection),
-						new ConcurrentHashMap<>(
-								new InjectorConfiguration(specification, bindModules).configure(boundInstances))));
+						new InjectorConfiguration(specification, bindModules, providerMap).configure(boundInstances)
+				));
 	}
 
 }

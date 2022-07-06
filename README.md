@@ -146,6 +146,38 @@ With regards to SolidInjector:
 
 Circular dependencies are detected, and an exception is thrown. `Provider` can be used to break circular dependencies. Alternatively, consider refactoring.
 
+### Multiple bindings
+
+Sometimes you may want to bind multiple implementations, and inject a `Set` of such instances. Note that this feature is outside the spec.
+
+To use this feature, use `@MultiBinding` on bind methods: multiple such bind methods may exist associated to the same interface.
+
+```java
+public class MultiBindingModule {
+	@MultiBinding
+	public MyService provider1(MyServiceImpl1 impl1) {
+		return impl1;
+	}
+
+	@MultiBinding
+	public MyService provider2(MyServiceImpl2 impl2) {
+		return impl2;
+    }
+}
+```
+
+Request all implementations as a `Set`, specifying `@MultiBinding`:
+
+```java
+public class MyDependent { 
+	private final Set<MyService> myServices;
+
+	public MyDependent(@MultiBinding Set<MyService> myServices) {
+		this.myServices = myServices;
+	}
+}
+```
+
 ### JPMS
 
 jakarta.inject has an 'Automatic-Module-Name' and is therefore safe to use on the modular classpath.

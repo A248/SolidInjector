@@ -1,31 +1,33 @@
-/* 
+/*
  * SolidInjector
- * Copyright © 2020 Anand Beh <https://www.arim.space>
- * 
+ * Copyright © 2022 Anand Beh
+ *
  * SolidInjector is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SolidInjector is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with SolidInjector. If not, see <https://www.gnu.org/licenses/>
  * and navigate to version 3 of the GNU Lesser General Public License.
  */
+
 package space.arim.injector;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 import space.arim.injector.error.InjectorException;
 import space.arim.injector.internal.InjectionSettings;
 import space.arim.injector.internal.InjectorConfiguration;
 import space.arim.injector.internal.InjectorImpl;
+import space.arim.injector.internal.provider.SimpleProviderMap;
 import space.arim.injector.internal.spec.SpecDetector;
 import space.arim.injector.internal.spec.SpecSupport;
 
@@ -75,6 +77,30 @@ public final class Injector {
 	}
 
 	/**
+	 * Requests multiple instances of an unqualified type, via the multibinding feature
+	 *
+	 * @param clazz the class of the type
+	 * @param <U> the type of the instance to retrieve
+	 * @return the instances
+	 * @throws InjectorException if resolving the type or a dependency somehow failed
+	 */
+	public <U> Set<U> requestMultipleInstances(Class<U> clazz) {
+		return impl.requestMultipleInstances(Identifier.ofType(clazz));
+	}
+
+	/**
+	 * Requests multiple instances according to an identifier, via the multibinding feature
+	 *
+	 * @param identifier the identifier
+	 * @param <U> the type of the instance to retrieve
+	 * @return the instances
+	 * @throws InjectorException if resolving the type or a dependency somehow failed
+	 */
+	public <U> Set<U> requestMultipleInstances(Identifier<U> identifier) {
+		return impl.requestMultipleInstances(identifier);
+	}
+
+	/**
 	 * Creates an injector from the given binding modules
 	 * 
 	 * @param bindModules the object modules to configure bindings
@@ -93,12 +119,12 @@ public final class Injector {
 	 * @throws InjectorException if the modules are misconfigured or misannotated
 	 */
 	public static Injector newInjector(Collection<Object> bindModules) {
-		SpecSupport spec = SpecDetector.detectedSpec();
+		SpecSupport specification = SpecDetector.detectedSpec();
 		return new Injector(
 				new InjectorImpl(
-						new InjectionSettings(spec),
-						new ConcurrentHashMap<>(
-								new InjectorConfiguration(spec, bindModules).configure())));
+						new InjectionSettings(specification),
+						new InjectorConfiguration(specification, bindModules, new SimpleProviderMap()).configure()
+				));
 	}
 
 }

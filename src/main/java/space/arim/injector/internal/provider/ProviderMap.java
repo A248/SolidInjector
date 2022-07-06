@@ -19,25 +19,23 @@
 
 package space.arim.injector.internal.provider;
 
-import space.arim.injector.internal.DependencyRepository;
+import space.arim.injector.Identifier;
 
-public interface ContextualProvider<T> {
+import java.util.Set;
+import java.util.function.Function;
 
-	T provideUsing(DependencyRepository repository);
+public interface ProviderMap {
 
-	default ContextlessProvider<T> attachTo(DependencyRepository repository) {
-		class AsContextless implements ContextlessProvider<T> {
+	// Fails by returning error message
+	String installProvider(Identifier<?> identifier, ContextualProvider<?> provider);
 
-			@Override
-			public T provide() {
-				return provideUsing(repository);
-			}
-		}
-		return new AsContextless();
-	}
+	<U> ContextualProvider<U> requestSingleProvider(Identifier<U> identifier,
+													Function<Identifier<U>, ContextualProvider<U>> creator);
 
-	default boolean permitsMultiBinding() {
-		return false;
-	}
+	<U> ContextualProvider<Set<U>> requestMultipleProviders(Identifier<U> identifier);
+
+	ProviderMap makeConcurrent();
+
+	boolean permitsMultiBindings();
 
 }

@@ -21,23 +21,24 @@ package space.arim.injector.internal.provider;
 
 import space.arim.injector.internal.DependencyRepository;
 
-public interface ContextualProvider<T> {
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-	T provideUsing(DependencyRepository repository);
+public final class MultiContextualProvider<T> implements ContextualProvider<Set<T>> {
 
-	default ContextlessProvider<T> attachTo(DependencyRepository repository) {
-		class AsContextless implements ContextlessProvider<T> {
+	private final ContextualProvider<T>[] providers;
 
-			@Override
-			public T provide() {
-				return provideUsing(repository);
-			}
+	public MultiContextualProvider(ContextualProvider<T>[] providers) {
+		this.providers = providers;
+	}
+
+	@Override
+	public Set<T> provideUsing(DependencyRepository repository) {
+		Set<T> values = new HashSet<>(providers.length, 1f);
+		for (ContextualProvider<T> provider : providers) {
+			values.add(provider.provideUsing(repository));
 		}
-		return new AsContextless();
+		return Collections.unmodifiableSet(values);
 	}
-
-	default boolean permitsMultiBinding() {
-		return false;
-	}
-
 }

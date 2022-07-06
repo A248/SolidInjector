@@ -21,23 +21,26 @@ package space.arim.injector.internal.provider;
 
 import space.arim.injector.internal.DependencyRepository;
 
-public interface ContextualProvider<T> {
+public final class MultiBindableContextualProvider<T> implements ContextualProvider<T> {
 
-	T provideUsing(DependencyRepository repository);
+	private final ContextualProvider<T> delegate;
 
-	default ContextlessProvider<T> attachTo(DependencyRepository repository) {
-		class AsContextless implements ContextlessProvider<T> {
-
-			@Override
-			public T provide() {
-				return provideUsing(repository);
-			}
-		}
-		return new AsContextless();
+	public MultiBindableContextualProvider(ContextualProvider<T> delegate) {
+		this.delegate = delegate;
 	}
 
-	default boolean permitsMultiBinding() {
-		return false;
+	@Override
+	public T provideUsing(DependencyRepository repository) {
+		return delegate.provideUsing(repository);
 	}
 
+	@Override
+	public ContextlessProvider<T> attachTo(DependencyRepository repository) {
+		return delegate.attachTo(repository);
+	}
+
+	@Override
+	public boolean permitsMultiBinding() {
+		return true;
+	}
 }

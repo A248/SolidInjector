@@ -19,25 +19,19 @@
 
 package space.arim.injector.internal.provider;
 
-import space.arim.injector.internal.DependencyRepository;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
 
-public interface ContextualProvider<T> {
+import java.util.stream.Stream;
 
-	T provideUsing(DependencyRepository repository);
+public final class ProviderMapFactory implements ArgumentsProvider {
 
-	default ContextlessProvider<T> attachTo(DependencyRepository repository) {
-		class AsContextless implements ContextlessProvider<T> {
-
-			@Override
-			public T provide() {
-				return provideUsing(repository);
-			}
-		}
-		return new AsContextless();
+	@Override
+	public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) throws Exception {
+		return Stream.of(
+				new SimpleProviderMap(), new SimpleProviderMap().makeConcurrent(),
+				new MultiBindingProviderMap(), new MultiBindingProviderMap().makeConcurrent()
+		).map(Arguments::of);
 	}
-
-	default boolean permitsMultiBinding() {
-		return false;
-	}
-
 }

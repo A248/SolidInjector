@@ -21,6 +21,7 @@ package space.arim.injector.internal;
 import java.lang.annotation.Annotation;
 
 import space.arim.injector.Identifier;
+import space.arim.injector.internal.reflect.GenericType;
 import space.arim.injector.internal.reflect.qualifier.QualifiersIn;
 import space.arim.injector.internal.spec.SpecSupport;
 
@@ -32,6 +33,11 @@ public class IdentifierCreation<U> {
 	public IdentifierCreation(Class<U> type, QualifiersIn qualifiersIn) {
 		this.type = type;
 		this.qualifiersIn = qualifiersIn;
+	}
+
+	@SuppressWarnings("unchecked")
+	public IdentifierCreation(GenericType type, QualifiersIn qualifiersIn) {
+		this((Class<U>) type.getRawType(), qualifiersIn);
 	}
 
 	public Identifier<U> createIdentifier(SpecSupport spec) {
