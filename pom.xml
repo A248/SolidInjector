@@ -20,8 +20,8 @@
 	</properties>
 	
 	<scm>
-		<connection>scm:git:git://github.com/A248/SolidInjector.git</connection>
-		<developerConnection>scm:git:ssh://github.com:A248/SolidInjector.git</developerConnection>
+		<connection>scm:git:ssh://git@github.com/A248/SolidInjector.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/A248/SolidInjector.git</developerConnection>
 		<url>http://github.com/A248/SolidInjector/tree/master</url>
 	</scm>
 	
