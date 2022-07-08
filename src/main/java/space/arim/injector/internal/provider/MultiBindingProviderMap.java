@@ -20,10 +20,10 @@
 package space.arim.injector.internal.provider;
 
 import space.arim.injector.Identifier;
-import space.arim.injector.error.MisconfiguredBindingsException;
 import space.arim.injector.error.MultiBindingRelatedException;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -109,7 +109,7 @@ public final class MultiBindingProviderMap implements ProviderMap {
 	public <U> ContextualProvider<Set<U>> requestMultipleProviders(Identifier<U> identifier) {
 		Object existingProviderOrMultiple = providers.get(identifier);
 		if (existingProviderOrMultiple == null) {
-			throw new MisconfiguredBindingsException("No binding(s) found for identifier " + identifier);
+			return (repository) -> Collections.emptySet();
 		}
 		if (existingProviderOrMultiple instanceof ContextualProvider[]) {
 			ContextualProvider<U>[] castedProviders = (ContextualProvider<U>[]) existingProviderOrMultiple;

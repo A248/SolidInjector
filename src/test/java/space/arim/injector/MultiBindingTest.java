@@ -96,6 +96,12 @@ public class MultiBindingTest {
 		assertEquals(qualifiedImpls, methodRequest.myProvidedQualifiedServices.get());
 	}
 
+	@Test
+	public void noBindingsRegistered() {
+		Identifier<MyService> alienIdentifier = Identifier.ofTypeAndNamed(MyService.class, "none bound");
+		assertEquals(Set.of(), injector.requestMultipleInstances(alienIdentifier));
+	}
+
 	public static class ConstructorRequest {
 
 		private final Set<MyService> myServices;

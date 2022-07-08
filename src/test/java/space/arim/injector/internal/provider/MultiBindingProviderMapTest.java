@@ -96,8 +96,8 @@ public class MultiBindingProviderMapTest {
 	}
 
 	@Test
-	public void noBindingsRegistered() {
-		assertThrows(MisconfiguredBindingsException.class, () -> providerMap.requestMultipleProviders(identifier));
+	public void noBindingsRegistered(@Mock DependencyRepository repository) {
+		assertEquals(Set.of(), providerMap.requestMultipleProviders(identifier).provideUsing(repository));
 	}
 
 	@Test
