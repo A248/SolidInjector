@@ -21,6 +21,7 @@ package space.arim.injector;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import space.arim.injector.error.InjectorException;
@@ -98,6 +99,32 @@ public final class Injector {
 	 */
 	public <U> Set<U> requestMultipleInstances(Identifier<U> identifier) {
 		return impl.requestMultipleInstances(identifier);
+	}
+
+	/**
+	 * Requests an instance of an unqualified type, via the optional binding feature.
+	 * If the type is not bound, an empty optional is returned.
+	 *
+	 * @param clazz the class of the type
+	 * @param <U> the type of the instance to retrieve
+	 * @return the optional instance
+	 * @throws InjectorException if resolving the type or a dependency somehow failed
+	 */
+	public <U> Optional<U> requestOptionalInstance(Class<U> clazz) {
+		return impl.requestInstanceOptionally(Identifier.ofType(clazz));
+	}
+
+	/**
+	 * Requests an instance according to an identifier, via the optional binding feature.
+	 * If the identifier is not bound, an empty optional is returned.
+	 *
+	 * @param identifier the identifier
+	 * @param <U> the type of the instance to retrieve
+	 * @return the optional instance
+	 * @throws InjectorException if resolving the type or a dependency somehow failed
+	 */
+	public <U> Optional<U> requestOptionalInstance(Identifier<U> identifier) {
+		return impl.requestInstanceOptionally(identifier);
 	}
 
 	/**

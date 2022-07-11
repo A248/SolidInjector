@@ -21,6 +21,7 @@ package space.arim.injector.internal.provider;
 
 import space.arim.injector.Identifier;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -33,6 +34,8 @@ public interface ProviderMap {
 													Function<Identifier<U>, ContextualProvider<U>> creator);
 
 	<U> ContextualProvider<Set<U>> requestMultipleProviders(Identifier<U> identifier);
+
+	<U> Optional<ContextualProvider<U>> requestProviderOptionally(Identifier<U> identifier);
 
 	ProviderMap makeConcurrent();
 

@@ -24,6 +24,7 @@ import space.arim.injector.error.MultiBindingRelatedException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -69,6 +70,13 @@ public final class SimpleProviderMap implements ProviderMap {
 	public <U> ContextualProvider<Set<U>> requestMultipleProviders(Identifier<U> identifier) {
 		throw new MultiBindingRelatedException(
 				"The multi-binding feature must be explicitly enabled with injectorBuilder.multiBindings(true)");
+	}
+
+	@Override
+	public <U> Optional<ContextualProvider<U>> requestProviderOptionally(Identifier<U> identifier) {
+		@SuppressWarnings("unchecked")
+		ContextualProvider<U> possibleProvider = (ContextualProvider<U>) providers.get(identifier);
+		return Optional.ofNullable(possibleProvider);
 	}
 
 	@Override

@@ -49,8 +49,8 @@ public class MultiBindingTest {
 	public void setInjector() {
 		impl3 = new Impl3();
 		injector = new InjectorBuilder()
-				.multiBindings(true)
 				.addBindModules(new BindModule(impl3))
+				.multiBindings(true)
 				.build();
 
 		impls = injector.requestMultipleInstances(MyService.class);

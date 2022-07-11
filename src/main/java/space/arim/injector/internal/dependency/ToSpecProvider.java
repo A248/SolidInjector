@@ -19,7 +19,6 @@
 
 package space.arim.injector.internal.dependency;
 
-import space.arim.injector.Identifier;
 import space.arim.injector.internal.DependencyRepository;
 import space.arim.injector.internal.provider.ContextlessProvider;
 import space.arim.injector.internal.provider.ContextualProvider;
@@ -27,21 +26,21 @@ import space.arim.injector.internal.spec.SpecSupport;
 
 import java.util.Objects;
 
-public class InstantiableMultiProviderDependency<T> implements InstantiableDependency {
+public final class ToSpecProvider<P> {
 
 	private transient final SpecSupport spec;
-	private final Class<T> providerType;
-	private final Identifier<?> identifier;
+	private final Class<P> providerType;
 
-	public InstantiableMultiProviderDependency(SpecSupport spec, Class<T> providerType, Identifier<?> identifier) {
+	public ToSpecProvider(SpecSupport spec, Class<P> providerType) {
 		this.spec = Objects.requireNonNull(spec, "spec");
 		this.providerType = Objects.requireNonNull(providerType, "providerType");
-		this.identifier = Objects.requireNonNull(identifier, "identifier");
 	}
 
-	@Override
-	public T instantiate(DependencyRepository repository) {
-		ContextualProvider<?> contextualProvider = repository.requestMultipleProviders(identifier);
+	public Class<P> providerType() {
+		return providerType;
+	}
+
+	public P externalizeProvider(ContextualProvider<?> contextualProvider, DependencyRepository repository) {
 		ContextlessProvider<?> contextlessProvider = contextualProvider.attachTo(repository.getRoot());
 		return spec.externalize(contextlessProvider, providerType);
 	}
@@ -50,19 +49,17 @@ public class InstantiableMultiProviderDependency<T> implements InstantiableDepen
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		InstantiableMultiProviderDependency<?> that = (InstantiableMultiProviderDependency<?>) o;
-		return providerType.equals(that.providerType) && identifier.equals(that.identifier);
+		ToSpecProvider<?> that = (ToSpecProvider<?>) o;
+		return providerType.equals(that.providerType);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = providerType.hashCode();
-		result = 31 * result + identifier.hashCode();
-		return result;
+		return providerType.hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return "multi-provider dependency [providerType=" + providerType.getName() + ", identifier=" + identifier + "]";
+		return "ToSpecProvider{providerType=" + providerType + '}';
 	}
 }

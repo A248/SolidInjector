@@ -21,10 +21,12 @@ package space.arim.injector.internal;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.util.Optional;
 import java.util.Set;
 
 import space.arim.injector.Identifier;
 import space.arim.injector.error.MisconfiguredBindingsException;
+import space.arim.injector.error.OptionalBindingRelatedException;
 import space.arim.injector.internal.provider.ContextualProvider;
 import space.arim.injector.internal.provider.ProviderMap;
 import space.arim.injector.internal.reflect.ConstructorAsProvider;
@@ -83,6 +85,20 @@ public final class InjectorImpl implements DependencyRepository {
 	@Override
 	public <U> Set<U> requestMultipleInstances(Identifier<U> identifier) {
 		return new InjectionRequest(this).requestMultipleInstances(identifier);
+	}
+
+	@Override
+	public <U> Optional<ContextualProvider<U>> requestProviderOptionally(Identifier<U> identifier) {
+		if (!settings.optionalBindings()) {
+			throw new OptionalBindingRelatedException(
+					"The optional binding feature must be explicitly enabled with injectorBuilder.optionalBindings(true)");
+		}
+		return providerMap.requestProviderOptionally(identifier);
+	}
+
+	@Override
+	public <U> Optional<U> requestInstanceOptionally(Identifier<U> identifier) {
+		return new InjectionRequest(this).requestInstanceOptionally(identifier);
 	}
 
 }

@@ -23,26 +23,26 @@ import space.arim.injector.Identifier;
 import space.arim.injector.internal.DependencyRepository;
 
 import java.util.Objects;
-import java.util.Set;
+import java.util.Optional;
 
-public class InstantiableMultiInstanceDependency<T> implements InstantiableDependency {
+public final class OptionalInstanceDependency<T> implements InstantiableDependency {
 
 	private final Identifier<T> identifier;
 
-	public InstantiableMultiInstanceDependency(Identifier<T> identifier) {
+	public OptionalInstanceDependency(Identifier<T> identifier) {
 		this.identifier = Objects.requireNonNull(identifier, "identifier");
 	}
 
 	@Override
-	public Set<T> instantiate(DependencyRepository repository) {
-		return repository.requestMultipleInstances(identifier);
+	public Optional<T> instantiate(DependencyRepository repository) {
+		return repository.requestInstanceOptionally(identifier);
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		InstantiableMultiInstanceDependency<?> that = (InstantiableMultiInstanceDependency<?>) o;
+		OptionalInstanceDependency<?> that = (OptionalInstanceDependency<?>) o;
 		return identifier.equals(that.identifier);
 	}
 
@@ -53,6 +53,6 @@ public class InstantiableMultiInstanceDependency<T> implements InstantiableDepen
 
 	@Override
 	public String toString() {
-		return "multi-instance dependency [identifier=" + identifier + "]";
+		return "optional instance dependency [identifier=" + identifier + "]";
 	}
 }

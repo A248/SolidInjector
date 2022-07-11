@@ -44,7 +44,7 @@ public final class GenericType {
 		if (type instanceof ParameterizedType) {
 			return (Class<?>) ((ParameterizedType) type).getRawType();
 		}
-		throw new InjectorException("Generic types are not supported beyond using Provider or multi-binding.");
+		throw new InjectorException("Generic types are not supported, except for specific features such as injecting Provider or multi-binding and optional binding.");
 	}
 
 	private InjectorInternalFailureException failedAnnotatedGenerics(String reason) {

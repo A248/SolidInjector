@@ -1,21 +1,22 @@
-/* 
+/*
  * SolidInjector
- * Copyright © 2020 Anand Beh <https://www.arim.space>
- * 
+ * Copyright © 2022 Anand Beh
+ *
  * SolidInjector is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SolidInjector is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with SolidInjector. If not, see <https://www.gnu.org/licenses/>
  * and navigate to version 3 of the GNU Lesser General Public License.
  */
+
 package space.arim.injector.internal.reflect;
 
 import static java.lang.annotation.ElementType.PARAMETER;
@@ -40,8 +41,9 @@ import space.arim.injector.example.TrafficControl;
 import space.arim.injector.example.Wing;
 import space.arim.injector.internal.dependency.InstantiableDependency;
 import space.arim.injector.internal.dependency.InstantiableDependencyBunch;
-import space.arim.injector.internal.dependency.InstantiableInstanceDependency;
-import space.arim.injector.internal.dependency.InstantiableProviderDependency;
+import space.arim.injector.internal.dependency.InstanceDependency;
+import space.arim.injector.internal.dependency.ProviderDependency;
+import space.arim.injector.internal.dependency.ToSpecProvider;
 import space.arim.injector.internal.spec.JakartaSpecSupportProvider;
 import space.arim.injector.internal.spec.SpecSupport;
 
@@ -90,8 +92,8 @@ public class ExecutableDependenciesTest {
 	public void testMethodUnqualifiedDependencies(SpecSupport spec) throws NoSuchMethodException, SecurityException {
 		assertEquals(
 				new InstantiableDependencyBunch(new InstantiableDependency[] {
-						new InstantiableInstanceDependency<>(Identifier.ofType(Plane.class)),
-						new InstantiableInstanceDependency<>(Identifier.ofType(Wing.class))
+						new InstanceDependency<>(Identifier.ofType(Plane.class)),
+						new InstanceDependency<>(Identifier.ofType(Wing.class))
 				}),
 				fromMethod(spec, "methodUnqualifiedDependencies"));
 	}
@@ -112,10 +114,10 @@ public class ExecutableDependenciesTest {
 	public void testMethodQualifiedDependencies(SpecSupport spec) throws NoSuchMethodException, SecurityException {
 		assertEquals(
 				new InstantiableDependencyBunch(new InstantiableDependency[] {
-						new InstantiableInstanceDependency<>(Identifier.ofType(Plane.class)),
-						new InstantiableInstanceDependency<>(Identifier.ofType(Wing.class)),
-						new InstantiableInstanceDependency<>(Identifier.ofTypeAndNamed(Wing.class, "tail")),
-						new InstantiableInstanceDependency<>(
+						new InstanceDependency<>(Identifier.ofType(Plane.class)),
+						new InstanceDependency<>(Identifier.ofType(Wing.class)),
+						new InstanceDependency<>(Identifier.ofTypeAndNamed(Wing.class, "tail")),
+						new InstanceDependency<>(
 								Identifier.ofTypeAndQualifier(TrafficControl.class, BusyAirport.class))
 				}),
 				fromMethod(spec, "methodQualifiedDependencies"));
@@ -132,11 +134,13 @@ public class ExecutableDependenciesTest {
 	public void testMethodQualifiedProviderDependencies(SpecSupport spec) throws NoSuchMethodException, SecurityException {
 		assertEquals(
 				new InstantiableDependencyBunch(new InstantiableDependency[] {
-						new InstantiableInstanceDependency<>(Identifier.ofType(Plane.class)),
-						new InstantiableProviderDependency<>(spec, Provider.class, Identifier.ofType(Wing.class)),
-						new InstantiableInstanceDependency<>(Identifier.ofTypeAndNamed(Wing.class, "tail")),
-						new InstantiableProviderDependency<>(
-								spec, Provider.class,
+						new InstanceDependency<>(Identifier.ofType(Plane.class)),
+						new ProviderDependency<>(
+								new ToSpecProvider<>(spec, Provider.class),
+								Identifier.ofType(Wing.class)),
+						new InstanceDependency<>(Identifier.ofTypeAndNamed(Wing.class, "tail")),
+						new ProviderDependency<>(
+								new ToSpecProvider<>(spec, Provider.class),
 								Identifier.ofTypeAndQualifier(TrafficControl.class, BusyAirport.class))
 				}),
 				fromMethod(spec, "methodQualifiedProviderDependencies"));
@@ -153,7 +157,8 @@ public class ExecutableDependenciesTest {
 			throws NoSuchMethodException, SecurityException {
 		assertEquals(
 				new InstantiableDependencyBunch(new InstantiableDependency[] {
-						new InstantiableProviderDependency<>(spec, Provider.class,
+						new ProviderDependency<>(
+								new ToSpecProvider<>(spec, Provider.class),
 								Identifier.ofTypeAndQualifier(TrafficControl.class, BusyAirport.class))
 				}),
 				fromMethod(spec, "methodQualifiedProviderWithTypeUseDependency"));

@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -122,6 +123,21 @@ public final class MultiBindingProviderMap implements ProviderMap {
 		}
 		ContextualProvider<U>[] providerAsArray = (ContextualProvider<U>[]) new ContextualProvider<?>[] {provider};
 		return new MultiContextualProvider<>(providerAsArray);
+	}
+
+	@Override
+	public <U> Optional<ContextualProvider<U>> requestProviderOptionally(Identifier<U> identifier) {
+		Object existingProviderOrMultiple = providers.get(identifier);
+		if (existingProviderOrMultiple == null) {
+			return Optional.empty();
+		}
+		if (existingProviderOrMultiple instanceof ContextualProvider[]) {
+			throw new MultiBindingRelatedException("Multiple bindings are registered " +
+					"for identifier " + identifier + ", but only one instance was requested.");
+		}
+		@SuppressWarnings("unchecked")
+		ContextualProvider<U> provider = (ContextualProvider<U>) existingProviderOrMultiple;
+		return Optional.of(provider);
 	}
 
 	@Override

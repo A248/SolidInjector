@@ -28,9 +28,10 @@ import space.arim.injector.internal.reflect.qualifier.QualifiersInCombined;
 import space.arim.injector.internal.spec.SpecSupport;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 import java.util.Set;
 
-public class AnnotatedTypeAsDependency {
+public final class AnnotatedTypeAsDependency {
 
 	private final SpecSupport spec;
 
@@ -62,19 +63,18 @@ public class AnnotatedTypeAsDependency {
 				GenericType setArgument = providerArgument.getTypeArgument();
 				Annotation[] setArgumentTypeUseAnnotations = setArgument.getAnnotations();
 				Class<?> multiBoundType = setArgument.getRawType();
-				return new InstantiableMultiProviderDependency<>(
-						spec, providerType,
+				return new MultiProviderDependency<>(
+						new ToSpecProvider<>(spec, providerType),
 						new IdentifierCreation<>(multiBoundType,
 								new QualifiersInCombined(
 										new QualifiersInAnnotations(extraAnnotations),
-										new QualifiersInCombined(
-												new QualifiersInAnnotations(providerArgumentTypeUseAnnotations),
-												new QualifiersInAnnotations(setArgumentTypeUseAnnotations)))
+										new QualifiersInAnnotations(providerArgumentTypeUseAnnotations),
+										new QualifiersInAnnotations(setArgumentTypeUseAnnotations))
 						).createIdentifier(spec));
 			}
 			// Inject a Provider<T>
-			return new InstantiableProviderDependency<>(
-					spec, providerType,
+			return new ProviderDependency<>(
+					new ToSpecProvider<>(spec, providerType),
 					new IdentifierCreation<>(providerArgument,
 							new QualifiersInCombined(
 									new QualifiersInAnnotations(extraAnnotations),
@@ -87,15 +87,40 @@ public class AnnotatedTypeAsDependency {
 			GenericType setArgument = type.getTypeArgument();
 			Annotation[] typeUseAnnotations = setArgument.getAnnotations();
 			Class<?> multiBoundType = setArgument.getRawType();
-			return new InstantiableMultiInstanceDependency<>(
+			return new MultiInstanceDependency<>(
 					new IdentifierCreation<>(multiBoundType,
 							new QualifiersInCombined(
 									new QualifiersInAnnotations(extraAnnotations),
 									new QualifiersInAnnotations(typeUseAnnotations))
 					).createIdentifier(spec));
 		}
+		if (rawType.equals(Optional.class)) {
+			GenericType optionalArgument = type.getTypeArgument();
+			Annotation[] optionalArgumentTypeUseAnnotations = optionalArgument.getAnnotations();
+			if (spec.isAnyProvider(optionalArgument.getRawType())) {
+				// Inject a Optional<Provider<T>>
+				Class<?> providerType = optionalArgument.getRawType();
+				GenericType providerArgument = optionalArgument.getTypeArgument();
+				Annotation[] providerArgumentTypeUseAnnotations = providerArgument.getAnnotations();
+				return new OptionalProviderDependency<>(
+						new ToSpecProvider<>(spec, providerType),
+						new IdentifierCreation<>(providerArgument,
+								new QualifiersInCombined(
+										new QualifiersInAnnotations(extraAnnotations),
+										new QualifiersInAnnotations(optionalArgumentTypeUseAnnotations),
+										new QualifiersInAnnotations(providerArgumentTypeUseAnnotations))
+						).createIdentifier(spec));
+			}
+			// Inject a Optional<T>
+			return new OptionalInstanceDependency<>(
+					new IdentifierCreation<>(optionalArgument,
+							new QualifiersInCombined(
+									new QualifiersInAnnotations(extraAnnotations),
+									new QualifiersInAnnotations(optionalArgumentTypeUseAnnotations))
+					).createIdentifier(spec));
+		}
 		// Inject a T
-		return new InstantiableInstanceDependency<>(
+		return new InstanceDependency<>(
 				new IdentifierCreation<>(rawType,
 						new QualifiersInAnnotations(extraAnnotations)
 				).createIdentifier(spec));

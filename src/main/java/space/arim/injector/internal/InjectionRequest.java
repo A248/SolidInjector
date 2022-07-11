@@ -20,6 +20,7 @@
 package space.arim.injector.internal;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import space.arim.injector.Identifier;
@@ -72,6 +73,23 @@ class InjectionRequest implements DependencyRepository {
 			exitIdentifier(identifier);
 		}
 		return instances;
+	}
+
+	@Override
+	public <U> Optional<ContextualProvider<U>> requestProviderOptionally(Identifier<U> identifier) {
+		return injector.requestProviderOptionally(identifier);
+	}
+
+	@Override
+	public <U> Optional<U> requestInstanceOptionally(Identifier<U> identifier) {
+		Optional<U> optInstance;
+		enterIdentifier(identifier);
+		try {
+			optInstance = requestProviderOptionally(identifier).map((provider) -> provider.provideUsing(this));
+		} finally {
+			exitIdentifier(identifier);
+		}
+		return optInstance;
 	}
 
 	// Circular request detection

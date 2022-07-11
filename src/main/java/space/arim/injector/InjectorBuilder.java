@@ -49,6 +49,7 @@ public final class InjectorBuilder {
 	private boolean privateInjection;
 	private boolean staticInjection;
 	private boolean multiBindings;
+	private boolean optionalBindings;
 
 	/**
 	 * Sets the specification to support ({@code javax.inject} or
@@ -104,6 +105,20 @@ public final class InjectorBuilder {
 	 */
 	public InjectorBuilder multiBindings(boolean multiBindings) {
 		this.multiBindings = multiBindings;
+		return this;
+	}
+
+	/**
+	 * Sets whether to enable the optional bindings feature. Disabled by default. <br>
+	 * <br>
+	 * Note that the optional bindings feature is outside the specification. It is suggested
+	 * to leave disabled unless otherwise necessary.
+	 *
+	 * @param optionalBindings whether to enable optional bindings
+	 * @return this builder
+	 */
+	public InjectorBuilder optionalBindings(boolean optionalBindings) {
+		this.optionalBindings = optionalBindings;
 		return this;
 	}
 
@@ -170,7 +185,7 @@ public final class InjectorBuilder {
 		SpecSupport specification = this.specification.toInternal();
 		return new Injector(
 				new InjectorImpl(
-						new InjectionSettings(specification, privateInjection, staticInjection),
+						new InjectionSettings(specification, privateInjection, staticInjection, optionalBindings),
 						new InjectorConfiguration(specification, bindModules, providerMap).configure(boundInstances)
 				));
 	}

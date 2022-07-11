@@ -22,6 +22,7 @@ package space.arim.injector.internal;
 import space.arim.injector.Identifier;
 import space.arim.injector.internal.provider.ContextualProvider;
 
+import java.util.Optional;
 import java.util.Set;
 
 public interface DependencyRepository {
@@ -35,5 +36,9 @@ public interface DependencyRepository {
 	<U> ContextualProvider<Set<U>> requestMultipleProviders(Identifier<U> identifier);
 
 	<U> Set<U> requestMultipleInstances(Identifier<U> identifier);
+
+	<U> Optional<ContextualProvider<U>> requestProviderOptionally(Identifier<U> identifier);
+
+	<U> Optional<U> requestInstanceOptionally(Identifier<U> identifier);
 
 }
