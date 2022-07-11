@@ -146,9 +146,23 @@ With regards to SolidInjector:
 
 Circular dependencies are detected, and an exception is thrown. `Provider` can be used to break circular dependencies. Alternatively, consider refactoring.
 
-### Multiple bindings
+### JPMS
 
-Sometimes you may want to bind multiple implementations, and inject a `Set` of such instances. Note that this feature is outside the spec.
+jakarta.inject has an 'Automatic-Module-Name' and is therefore safe to use on the modular classpath.
+
+javax.inject is in somewhat of a predicament. The original JSR-330 does not define its module name. However, the unofficial continuation of javax.inject under Jakarta EE 8 does define `java.inject` as the module name, see [here](https://github.com/eclipse-ee4j/injection-api/issues/14). This is also the logical module name which was discussed for JSR-330.
+
+Therefore, when using javax.inject in a modular environment, use the 'java.inject' module name and the Jakarta EE 8 continuation of javax.inject
+
+### Extra Features outside the specification
+
+These features fall outside the official specification. They must be explicitly enabled by configuring the InjectorBuilder:
+* `injectorBuilder.multiBindings(true)` for multi-binding
+* `injectorBuilder.optionalBindings(true)` for optional binding
+
+**Multiple bindings**
+
+Sometimes you may want to bind multiple implementations, and inject a `Set` of such instances.
 
 To use this feature, use `@MultiBinding` on bind methods: multiple such bind methods may exist associated to the same interface.
 
@@ -166,7 +180,7 @@ public class MultiBindingModule {
 }
 ```
 
-Request all implementations as a `Set`, specifying `@MultiBinding`:
+Request all implementations as a `Set`, again specifying `@MultiBinding`:
 
 ```java
 public class MyDependent { 
@@ -178,11 +192,29 @@ public class MyDependent {
 }
 ```
 
-### JPMS
+You must use `@MultiBinding` on bind methods *and* at injection points.
 
-jakarta.inject has an 'Automatic-Module-Name' and is therefore safe to use on the modular classpath.
+**Optional Bindings**
 
-javax.inject is in somewhat of a predicament. The original JSR-330 does not define its module name. However, the unofficial continuation of javax.inject under Jakarta EE 8 does define `java.inject` as the module name, see [here](https://github.com/eclipse-ee4j/injection-api/issues/14). This is also the logical module name which was discussed for JSR-330.
+An intuitive feature. If the binding is present, the optional is present. Otherwise the optional is empty.
 
-Therefore, when using javax.inject in a modular environment, use the 'java.inject' module name and the Jakarta EE 8 continuation of javax.inject
+```java
+public class MyDependent {
+    @Inject
+    public void injectOptionalService(Optional<MyService> optionalService) {
+        if (optionalService.isPresent()) {
+            MyService impl = optionalService.get();
+            System.out.println("MyService is bound to " + impl);
+        } else {
+            System.out.println("MyService is not bound");
+        }
+    }
+}
+```
 
+For use with `Provider`, inject a `Optional<Provider<T>>`. Note that `Provider<Optional>` is *not* supported.
+
+*Warning*: Do not mix Optional requests with non-optional requests for concrete classes:
+  * That is, your dependency graph should not contain both `MyConcreteClass` and `Optional<MyConcreteClass>` if `MyConcreteClass` is instantiable.
+  * If you do this, you subject yourself to the arbitrary and unpredictable instantiation order of your dependency graph. When `Optional<MyConcreteClass` is requested, if `MyConcreteClass` was requested first, you will receive the instance. However, if `MyConcreteClass` was not previously requested, you will receive an empty optional.
+  * This happens because `MyConcreteClass` is instantiated automatically when it is requested, but optional requests do not cause automatic instantiation.
