@@ -29,6 +29,8 @@ import space.arim.injector.internal.provider.ProviderMap;
 import space.arim.injector.internal.provider.SimpleProviderMap;
 import space.arim.injector.internal.spec.SpecSupport;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -129,6 +131,16 @@ public final class InjectorBuilder {
 	 * @return this builder
 	 */
 	public InjectorBuilder addBindModules(Object... bindModules) {
+		return addBindModules(Arrays.asList(bindModules));
+	}
+
+	/**
+	 * Adds the specified bind modules to this injector builder
+	 *
+	 * @param bindModules the bind modules
+	 * @return this builder
+	 */
+	public InjectorBuilder addBindModules(Collection<?> bindModules) {
 		for (Object bindModule : bindModules) {
 			Objects.requireNonNull(bindModule, "bind module");
 			this.bindModules.add(bindModule);
