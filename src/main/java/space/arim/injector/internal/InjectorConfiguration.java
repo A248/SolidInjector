@@ -78,16 +78,27 @@ public final class InjectorConfiguration {
 				"Failed to bind " + binding + ". " + reason);
 	}
 
+	private static boolean isBindMethod(Method method) {
+		if (method.getDeclaringClass().equals(Object.class) || Modifier.isStatic(method.getModifiers())) {
+			return false;
+		}
+		try {
+			// Make sure this method is not overridden from Object (e.g. equals or hashCode)
+			Object.class.getDeclaredMethod(method.getName(), method.getParameterTypes());
+			return false;
+		} catch (NoSuchMethodException ignored) {}
+		return true;
+	}
+
 	private void addBindModule(Object bindModule) {
 		for (Method method : bindModule.getClass().getMethods()) {
-			if (method.getDeclaringClass().equals(Object.class) || Modifier.isStatic(method.getModifiers())) {
-				continue;
-			}
-			ContextualProvider<?> provider = createMethodProvider(bindModule, method);
-			Identifier<?> identifier = createIdentifier(method);
-			String failureReason = providerMap.installProvider(identifier, provider);
-			if (failureReason != null) {
-				throw failedToBind("method " + QualifiedNames.forMethod(method), failureReason);
+			if (isBindMethod(method)) {
+				ContextualProvider<?> provider = createMethodProvider(bindModule, method);
+				Identifier<?> identifier = createIdentifier(method);
+				String failureReason = providerMap.installProvider(identifier, provider);
+				if (failureReason != null) {
+					throw failedToBind("method " + QualifiedNames.forMethod(method), failureReason);
+				}
 			}
 		}
 	}
