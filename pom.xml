@@ -3,7 +3,7 @@
 	
 	<groupId>space.arim.injector</groupId>
 	<artifactId>injector</artifactId>
-	<version>1.1.0-RC1</version>
+	<version>1.1.0-SNAPSHOT</version>
 	
 	<name>SolidInjector</name>
 	<description>Modern and lightweight injector supporting javax and jarkarta.</description>
@@ -21,7 +21,7 @@
 		<connection>scm:git:ssh://git@github.com/A248/SolidInjector.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com/A248/SolidInjector.git</developerConnection>
 		<url>http://github.com/A248/SolidInjector/tree/master</url>
-	  <tag>1.1.0-RC1</tag>
+	  <tag>HEAD</tag>
   </scm>
 	
 	<licenses>
