@@ -1,6 +1,6 @@
 /*
  * SolidInjector
- * Copyright © 2022 Anand Beh
+ * Copyright © 2023 Anand Beh
  *
  * SolidInjector is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -27,6 +27,7 @@ import space.arim.injector.internal.provider.ContextualProvider;
 import space.arim.injector.internal.provider.FixedContextualProvider;
 import space.arim.injector.internal.provider.MultiBindableContextualProvider;
 import space.arim.injector.internal.provider.NullCheckedContextualProvider;
+import space.arim.injector.internal.provider.IdentifierContextualProvider;
 import space.arim.injector.internal.provider.ProviderMap;
 import space.arim.injector.internal.provider.SingletonContextualProvider;
 import space.arim.injector.internal.reflect.ExecutableDependencies;
@@ -55,15 +56,22 @@ public final class InjectorConfiguration {
 	}
 
 	public ProviderMap configure() {
-		return configure(Collections.emptyMap());
+		return configure(Collections.emptyMap(), Collections.emptyMap());
 	}
 
-	public ProviderMap configure(Map<Identifier<?>, Object> boundInstances) {
+	public ProviderMap configure(Map<Identifier<?>, Identifier<?>> boundImplementors,
+								 Map<Identifier<?>, Object> boundInstances) {
 
 		for (Object bindModule : bindModules) {
 			Objects.requireNonNull(bindModule, "bind module");
 			addBindModule(bindModule);
 		}
+		boundImplementors.forEach((identifier, boundImplementor) -> {
+			String failureReason = providerMap.installProvider(identifier, new IdentifierContextualProvider<>(boundImplementor));
+			if (failureReason != null) {
+				throw failedToBind("implementor " + boundImplementor, failureReason);
+			}
+		});
 		boundInstances.forEach((identifier, boundInstance) -> {
 			String failureReason = providerMap.installProvider(identifier, new FixedContextualProvider<>(boundInstance));
 			if (failureReason != null) {

@@ -1,6 +1,6 @@
 /*
  * SolidInjector
- * Copyright © 2022 Anand Beh
+ * Copyright © 2023 Anand Beh
  *
  * SolidInjector is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -47,6 +47,7 @@ public final class InjectorBuilder {
 
 	private SpecificationSupport specification = SpecificationSupport.AUTO_DETECT;
 	private final Set<Object> bindModules = new HashSet<>();
+	private final Map<Identifier<?>, Identifier<?>> boundImplementors = new HashMap<>();
 	private final Map<Identifier<?>, Object> boundInstances = new HashMap<>();
 	private boolean privateInjection;
 	private boolean staticInjection;
@@ -148,6 +149,81 @@ public final class InjectorBuilder {
 		return this;
 	}
 
+	private void checkUnbound(Identifier<?> identifier) {
+		Identifier<?> previousImpl = boundImplementors.get(identifier);
+		if (previousImpl != null) {
+			throw new MisconfiguredBindingsException("Binding already exists for identifier " + identifier
+					+ " (previous binding is implementor " + previousImpl + ")");
+		}
+		Object previousInstance = boundInstances.get(identifier);
+		if (previousInstance != null) {
+			throw new MisconfiguredBindingsException("Binding already exists for identifier " + identifier
+					+ " (previous binding is instance " + previousInstance + ")");
+		}
+	}
+
+	private <U> void bindImplementor0(Identifier<U> identifier, Identifier<? extends U> implementor) {
+		if (identifier.equals(implementor)) {
+			throw new IllegalArgumentException("Implementor must not be the same");
+		}
+		if (!identifier.getType().isAssignableFrom(implementor.getType())) {
+			throw new ClassCastException("Implementor identifier type must be compatible");
+		}
+		checkUnbound(identifier);
+		boundImplementors.put(identifier, implementor);
+	}
+
+	private <U> void bindInstance0(Identifier<U> identifier, U instance) {
+		identifier.getType().cast(instance);
+		checkUnbound(identifier);
+		boundInstances.put(identifier, instance);
+	}
+
+	/**
+	 * Binds an identifier to another. The types must be compatible.
+	 *
+	 * @param <U>        the type to bind
+	 * @param identifier the identifier of the type
+	 * @param implementor the implementation identifier
+	 * @return this builder
+	 * @throws MisconfiguredBindingsException if the identifier is known to already be bound
+	 * @throws IllegalArgumentException if the implementor is the same as the identifier
+	 */
+	public <U> InjectorBuilder bindIdentifier(Identifier<U> identifier, Identifier<? extends U> implementor) {
+		bindImplementor0(identifier, implementor);
+		return this;
+	}
+
+	/**
+	 * Binds an identifier to an unqualified type. The types must be compatible.
+	 *
+	 * @param <U>        the type to bind
+	 * @param identifier the identifier of the type
+	 * @param implementor the unqualified implementation class
+	 * @return this builder
+	 * @throws MisconfiguredBindingsException if the identifier is known to already be bound
+	 * @throws IllegalArgumentException if the implementor is the same as the identifier
+	 */
+	public <U> InjectorBuilder bindIdentifier(Identifier<U> identifier, Class<? extends U> implementor) {
+		bindImplementor0(identifier, Identifier.ofType(implementor));
+		return this;
+	}
+
+	/**
+	 * Binds an unqualified type to another. The types must be compatible.
+	 *
+	 * @param <U>        the type to bind
+	 * @param clazz the class of the type
+	 * @param implementor the unqualified implementation class
+	 * @return this builder
+	 * @throws MisconfiguredBindingsException if the identifier is known to already be bound
+	 * @throws IllegalArgumentException if the implementor is the same as the identifier
+	 */
+	public <U> InjectorBuilder bindIdentifier(Class<U> clazz, Class<? extends U> implementor) {
+		bindImplementor0(Identifier.ofType(clazz), Identifier.ofType(implementor));
+		return this;
+	}
+
 	/**
 	 * Binds an unqualified type to an instance
 	 * 
@@ -167,7 +243,7 @@ public final class InjectorBuilder {
 	 * Binds an identifier to an instance
 	 * 
 	 * @param <U>        the type to bind
-	 * @param identifier the identifier of the type to bind
+	 * @param identifier the identifier of the type
 	 * @param instance   the instance
 	 * @return this builder
 	 * @throws MisconfiguredBindingsException if the identifier is known to already
@@ -176,14 +252,6 @@ public final class InjectorBuilder {
 	public <U> InjectorBuilder bindInstance(Identifier<U> identifier, U instance) {
 		bindInstance0(identifier, instance);
 		return this;
-	}
-
-	private <U> void bindInstance0(Identifier<U> identifier, U instance) {
-		Object previous = boundInstances.put(identifier, instance);
-		if (previous != null) {
-			throw new MisconfiguredBindingsException("Binding already exists for identifier " + identifier
-					+ " (previous binding is instance " + previous + ")");
-		}
 	}
 
 	/**
@@ -198,7 +266,9 @@ public final class InjectorBuilder {
 		return new Injector(
 				new InjectorImpl(
 						new InjectionSettings(specification, privateInjection, staticInjection, optionalBindings),
-						new InjectorConfiguration(specification, bindModules, providerMap).configure(boundInstances)
+						new InjectorConfiguration(specification, bindModules, providerMap).configure(
+								boundImplementors, boundInstances
+						)
 				));
 	}
 
